@@ -12,6 +12,8 @@ class Mem{
     Mem();
     void load(unsigned char* data, uint64_t size, uint16_t addr);
     unsigned char read(uint16_t addr); 
+    void write(uint16_t addr, unsigned char value);
+
     void log(uint16_t addr);
     ~Mem();
 };
