@@ -7,7 +7,7 @@
 #include <cstdint>
 class Mem{
     private:
-    unsigned char memory[8*1024]; /* 8 KiB */
+    unsigned char memory[64*1024];
     public:
     Mem();
     void load(unsigned char* data, uint64_t size, uint16_t addr);

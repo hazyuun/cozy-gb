@@ -3,8 +3,10 @@
  *  Description : TODO
  * */
 #include <iostream>
+#include <iomanip>
 #include "Z80.h"
 #include "mem.h"
+
 extern Mem mem;
 
 Z80::Z80(){
@@ -19,8 +21,7 @@ Z80::Z80(){
 }
 void Z80::cycle(){
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
-    //std::cout<<"0x"<<std::hex<<((opcode<<8)|mem.read(registers.PC+2))<<"\t\t";
-   
+
     Z80::inst_t inst;
     
     
@@ -29,22 +30,38 @@ void Z80::cycle(){
     else{
         inst = CB_insts[(opcode & 0xFF)];
     }
-    
+    uint32_t inst_hex;
+    uint16_t inst_arg;
     switch(inst.size){
     case 1:
         registers.PC++;
-        fprintf(stdout, inst._asm);
+        inst_hex = (opcode>>8);
+        inst_arg = 0x0;
         break;
     case 2:
         registers.PC += 2;
-        fprintf(stdout, inst._asm, (opcode & 0xFF));
+        inst_hex = opcode;
+        inst_arg = inst_hex & 0x00FF;
         break;
     case 3:
-        fprintf(stdout, inst._asm, ((mem.read(registers.PC+2)<<8)|(opcode & 0xFF)));
-        registers.PC += 3;
-        break;
 
+    	inst_hex = (opcode<<8)|mem.read(registers.PC+2);
+    	inst_arg = ((inst_hex&0x00FF)<<8)|((inst_hex&0xFF00)>>8);
+    	registers.PC += 3;
+        break;
     }
+
+    std::cout<<std::setw(8)<<"0x"<<std::hex<<registers.PC<<"\t"
+             <<std::setw(8)<<"0x"<<std::hex<<inst_hex<<"\t\t";
+    if		(inst.size != 1) 	fprintf(stdout, inst._asm, inst_arg);
+    else 						fprintf(stdout, inst._asm);
+
+    if(!inst.function){
+    	std::cout<<"\nUnknown opcode ! "<<std::endl;
+    	return;
+    }
+
+    (this->*inst.function)(inst_arg);
 }
 Z80::~Z80(){
 

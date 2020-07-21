@@ -7,11 +7,12 @@
 
 Mem mem;
 Z80 cpu;
-
+unsigned char* ROM;
 int main(int argc, char** argv){
-    if(argc != 2)
-        return 1;
-    
+    if(argc != 2){
+    	std::cout<<"NO ROM !"<<std::endl;
+    	return 1;
+    }
     std::ifstream file(argv[1], std::ios::in | std::ios::binary | std::ios::ate);
     uint64_t size = file.tellg();
     file.seekg(0, std::ios::beg);
