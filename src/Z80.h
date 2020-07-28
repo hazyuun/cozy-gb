@@ -62,7 +62,7 @@ class Z80{
         void(Z80::*function)(uint16_t);
     } inst_t;
 
-
+    void _AND(uint8_t n);
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
 	void i_0x2(uint16_t args);
