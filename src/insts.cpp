@@ -726,8 +726,17 @@ void Z80::_AND(uint8_t n){
 	registers.F &= 0b10101111;
 	registers.F |= 0b00100000;
 	registers.A = result;
-
 }
+
+void Z80::_OR(uint8_t n){
+	int8_t result = registers.A | n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10001111;
+	registers.A = result;
+}
+
+
 
 void Z80::i_0xa0(uint16_t args){
 	_AND(registers.B);
@@ -763,14 +772,30 @@ void Z80::i_0xaf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 
 
-void Z80::i_0xb0(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb1(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb2(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb3(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb5(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb6(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xb0(uint16_t args){
+	_OR(registers.B);
+}
+void Z80::i_0xb1(uint16_t args){
+	_OR(registers.C);
+}
+void Z80::i_0xb2(uint16_t args){
+	_OR(registers.D);
+}
+void Z80::i_0xb3(uint16_t args){
+	_OR(registers.E);
+}
+void Z80::i_0xb4(uint16_t args){
+	_OR(registers.H);
+}
+void Z80::i_0xb5(uint16_t args){
+	_OR(registers.L);
+}
+void Z80::i_0xb6(uint16_t args){
+	_OR(mem.read(registers.HL));
+}
+void Z80::i_0xb7(uint16_t args){
+	_OR(registers.A);
+}
 void Z80::i_0xb8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xb9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xba(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
@@ -819,7 +844,9 @@ void Z80::i_0xe6(uint16_t args){
 	_AND((args&0xFF));
 }
 void Z80::i_0xee(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xf6(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xf6(uint16_t args){
+	_OR((args&0xFF));
+}
 void Z80::i_0xfe(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 
