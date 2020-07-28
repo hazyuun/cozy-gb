@@ -735,7 +735,13 @@ void Z80::_OR(uint8_t n){
 	registers.F &= 0b10001111;
 	registers.A = result;
 }
-
+void Z80::_XOR(uint8_t n){
+	int8_t result = registers.A ^ n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10001111;
+	registers.A = result;
+}
 
 
 void Z80::i_0xa0(uint16_t args){
@@ -760,14 +766,30 @@ void Z80::i_0xa6(uint16_t args){
 	_AND(mem.read(registers.HL));
 }
 void Z80::i_0xa7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xa8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xa9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xaa(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xab(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xac(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xad(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xae(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xaf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xa8(uint16_t args){
+	_XOR(registers.B);
+}
+void Z80::i_0xa9(uint16_t args){
+	_XOR(registers.C);
+}
+void Z80::i_0xaa(uint16_t args){
+	_XOR(registers.D);
+}
+void Z80::i_0xab(uint16_t args){
+	_XOR(registers.E);
+}
+void Z80::i_0xac(uint16_t args){
+	_XOR(registers.H);
+}
+void Z80::i_0xad(uint16_t args){
+	_XOR(registers.L);
+}
+void Z80::i_0xae(uint16_t args){
+	_XOR(mem.read(registers.HL));
+}
+void Z80::i_0xaf(uint16_t args){
+	_XOR(registers.A);
+}
 
 
 
@@ -843,7 +865,9 @@ void Z80::i_0xde(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xe6(uint16_t args){
 	_AND((args&0xFF));
 }
-void Z80::i_0xee(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xee(uint16_t args){
+	_XOR((args&0xFF));
+}
 void Z80::i_0xf6(uint16_t args){
 	_OR((args&0xFF));
 }
