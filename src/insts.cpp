@@ -345,6 +345,81 @@ void Z80::i_0xf1(uint16_t args){
 
 /* 8-bit arithmetic / logical instructions */
 
+#define carry(a,b) (((a&0x80) && (b&0x80)) == 128)
+#define hcarry(a,b) ((((a&0xf) + (b&0xf))&0x10) == 16)
+
+void Z80::_ADD(uint8_t n){
+	int8_t result = registers.A + n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10111111;
+	bool C = carry(registers.A, n);
+	bool H = hcarry(registers.A, n);
+	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
+	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	registers.A = result;
+}
+void Z80::_ADC(uint8_t n){
+	int8_t result = registers.A + n + ((registers.F & 0x10)>>4);
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10111111;
+	bool C = carry(registers.A, n);
+	bool H = hcarry(registers.A, n);
+	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
+	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	registers.A = result;
+}
+
+void Z80::_SUB(uint8_t n){
+	int8_t result = registers.A - n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F |= 0b01000000;
+	bool C = (n > registers.A);
+	bool H = ((n&0xF) > (registers.A&0xF));
+	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
+	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	registers.A = result;
+}
+void Z80::_SDC(uint8_t n){
+	int8_t result = registers.A - (n + (registers.F & 0x80)?1:0);
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F |= 0b01000000;
+	bool C = ((n + (registers.F & 0x80)?1:0) > registers.A);
+	bool H = (((n + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
+	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
+	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	registers.A = result;
+}
+
+void Z80::_AND(uint8_t n){
+	int8_t result = registers.A & n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10101111;
+	registers.F |= 0b00100000;
+	registers.A = result;
+}
+
+void Z80::_OR(uint8_t n){
+	int8_t result = registers.A | n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10001111;
+	registers.A = result;
+}
+
+void Z80::_XOR(uint8_t n){
+	int8_t result = registers.A ^ n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F &= 0b10001111;
+	registers.A = result;
+}
+
+
 void Z80::i_0x4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0x5(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xc(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
@@ -369,380 +444,104 @@ void Z80::i_0x3c(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0x3d(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0x3f(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
-#define carry(a,b) (((a&0x80) && (b&0x80)) == 128)
-#define hcarry(a,b) ((((a&0xf) + (b&0xf))&0x10) == 16)
 
 void Z80::i_0x80(uint16_t args){
-	int8_t result = registers.A + registers.B;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.B);
-	bool H = hcarry(registers.A, registers.B);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.B);
 }
 void Z80::i_0x81(uint16_t args){
-	int8_t result = registers.A + registers.C;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.C);
-	bool H = hcarry(registers.A, registers.C);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.C);
 }
 void Z80::i_0x82(uint16_t args){
-	int8_t result = registers.A + registers.D;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.D);
-	bool H = hcarry(registers.A, registers.D);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.D);
 }
 void Z80::i_0x83(uint16_t args){
-	int8_t result = registers.A + registers.E;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.E);
-	bool H = hcarry(registers.A, registers.E);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.E);
 }
 void Z80::i_0x84(uint16_t args){
-	int8_t result = registers.A + registers.H;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.H);
-	bool H = hcarry(registers.A, registers.H);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.H);
 }
 void Z80::i_0x85(uint16_t args){
-	int8_t result = registers.A + registers.L;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.L);
-	bool H = hcarry(registers.A, registers.L);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.L);
 }
 void Z80::i_0x86(uint16_t args){
-	int8_t result = registers.A + mem.read(registers.HL);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, mem.read(registers.HL));
-	bool H = hcarry(registers.A, mem.read(registers.HL));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(mem.read(registers.HL));
 }
 void Z80::i_0x87(uint16_t args){
-	int8_t result = registers.A + registers.A;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.A);
-	bool H = hcarry(registers.A, registers.A);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD(registers.A);
 }
 
 void Z80::i_0x88(uint16_t args){
-	int8_t result = registers.A + registers.B + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.B);
-	bool H = hcarry(registers.A, registers.B);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.B);
 }
 void Z80::i_0x89(uint16_t args){
-	int8_t result = registers.A + registers.C + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.C);
-	bool H = hcarry(registers.A, registers.C);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.C);
 }
 void Z80::i_0x8a(uint16_t args){
-	int8_t result = registers.A + registers.D + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.D);
-	bool H = hcarry(registers.A, registers.D);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.D);
 }
 void Z80::i_0x8b(uint16_t args){
-	int8_t result = registers.A + registers.E + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.E);
-	bool H = hcarry(registers.A, registers.E);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.E);
 }
 void Z80::i_0x8c(uint16_t args){
-	int8_t result = registers.A + registers.H + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.H);
-	bool H = hcarry(registers.A, registers.H);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.H);
 }
 void Z80::i_0x8d(uint16_t args){
-	int8_t result = registers.A + registers.L + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, registers.L);
-	bool H = hcarry(registers.A, registers.L);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(registers.L);
 }
 void Z80::i_0x8e(uint16_t args){
-	int8_t result = registers.A + mem.read(registers.HL) + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, mem.read(registers.HL));
-	bool H = hcarry(registers.A, mem.read(registers.HL));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC(mem.read(registers.HL));
 }
 void Z80::i_0x8f(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 
 void Z80::i_0x90(uint16_t args){
-	int8_t result = registers.A - registers.B;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.B > registers.A);
-	bool H = ((registers.B&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.B);
 }
 void Z80::i_0x91(uint16_t args){
-	int8_t result = registers.A - registers.C;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.C > registers.A);
-	bool H = ((registers.C&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.C);
 }
 void Z80::i_0x92(uint16_t args){
-	int8_t result = registers.A - registers.D;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.D > registers.A);
-	bool H = ((registers.D&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.D);
 }
 void Z80::i_0x93(uint16_t args){
-	int8_t result = registers.A - registers.E;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.E > registers.A);
-	bool H = ((registers.E&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.E);
 }
 void Z80::i_0x94(uint16_t args){
-	int8_t result = registers.A - registers.H;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.H > registers.A);
-	bool H = ((registers.H&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.H);
 }
 void Z80::i_0x95(uint16_t args){
-	int8_t result = registers.A - registers.L;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.L > registers.A);
-	bool H = ((registers.L&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.L);
 }
 void Z80::i_0x96(uint16_t args){
-	int8_t result = registers.A - mem.read(registers.HL);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (mem.read(registers.HL) > registers.A);
-	bool H = ((mem.read(registers.HL)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(mem.read(registers.HL));
 }
 void Z80::i_0x97(uint16_t args){
-	int8_t result = registers.A - registers.A;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (registers.A > registers.A);
-	bool H = ((registers.A&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB(registers.A);
 }
 void Z80::i_0x98(uint16_t args){
-	int8_t result = registers.A - (registers.B + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.B + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.B + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.B);
 }
 void Z80::i_0x99(uint16_t args){
-	int8_t result = registers.A - (registers.C + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.C + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.C + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.C);
 }
 void Z80::i_0x9a(uint16_t args){
-	int8_t result = registers.A - (registers.D + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.D + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.D + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.D);
 }
 void Z80::i_0x9b(uint16_t args){
-	int8_t result = registers.A - (registers.E + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.E + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.E + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.E);
 }
 void Z80::i_0x9c(uint16_t args){
-	int8_t result = registers.A - (registers.H + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.H + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.H + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.H);
 }
 void Z80::i_0x9d(uint16_t args){
-	int8_t result = registers.A - (registers.L + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.L + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.L + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.L);
 }
 void Z80::i_0x9e(uint16_t args){
-	int8_t result = registers.A - (mem.read(registers.HL) + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((mem.read(registers.HL) + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((mem.read(registers.HL) + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(mem.read(registers.HL));
 }
 void Z80::i_0x9f(uint16_t args){
-	int8_t result = registers.A - (registers.A + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((registers.A + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((registers.A + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SDC(registers.A);
 }
-
-
-void Z80::_AND(uint8_t n){
-	int8_t result = registers.A & n;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10101111;
-	registers.F |= 0b00100000;
-	registers.A = result;
-}
-
-void Z80::_OR(uint8_t n){
-	int8_t result = registers.A | n;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10001111;
-	registers.A = result;
-}
-void Z80::_XOR(uint8_t n){
-	int8_t result = registers.A ^ n;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10001111;
-	registers.A = result;
-}
-
 
 void Z80::i_0xa0(uint16_t args){
 	_AND(registers.B);
@@ -829,37 +628,13 @@ void Z80::i_0xbf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 
 void Z80::i_0xc6(uint16_t args){
-	int8_t result = registers.A + (args&0xFF);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, (args&0xFF));
-	bool H = hcarry(registers.A, (args&0xFF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADD((args&0xFF));
 }
 void Z80::i_0xce(uint16_t args){
-	int8_t result = registers.A + (int8_t)(args & 0x0F) + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, (int8_t)(args & 0x0F));
-	bool H = hcarry(registers.A, (int8_t)(args & 0x0F));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_ADC((args&0xFF));
 }
 void Z80::i_0xd6(uint16_t args){
-	int8_t result = registers.A - (args&0xFF);
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((args&0xFF) > registers.A);
-	bool H = (((args&0xFF)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
+	_SUB((args&0xFF));
 }
 void Z80::i_0xde(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xe6(uint16_t args){
