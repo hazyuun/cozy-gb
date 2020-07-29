@@ -62,6 +62,10 @@ class Z80{
         void(Z80::*function)(uint16_t);
     } inst_t;
 
+    void _ADD(uint8_t n);
+    void _ADC(uint8_t n);
+    void _SDC(uint8_t n);
+    void _SUB(uint8_t n);
     void _AND(uint8_t n);
     void _OR(uint8_t n);
     void _XOR(uint8_t n);
