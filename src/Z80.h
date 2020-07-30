@@ -69,6 +69,8 @@ class Z80{
     void _AND(uint8_t n);
     void _OR(uint8_t n);
     void _XOR(uint8_t n);
+    void _CP(uint8_t n);
+
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
 	void i_0x2(uint16_t args);

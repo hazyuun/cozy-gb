@@ -419,6 +419,17 @@ void Z80::_XOR(uint8_t n){
 	registers.A = result;
 }
 
+void Z80::_CP(uint8_t n){
+	int8_t result = registers.A - n;
+	if(!result) registers.F |= 0b10000000;
+	else registers.F &= 0b01111111;
+	registers.F |= 0b01000000;
+	bool C = (n > registers.A);
+	bool H = ((n&0xF) > (registers.A&0xF));
+	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
+	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+}
+
 
 void Z80::i_0x4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0x5(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
@@ -617,14 +628,30 @@ void Z80::i_0xb6(uint16_t args){
 void Z80::i_0xb7(uint16_t args){
 	_OR(registers.A);
 }
-void Z80::i_0xb8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xb9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xba(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xbb(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xbc(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xbd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xbe(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xbf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xb8(uint16_t args){
+	_CP(registers.B);
+}
+void Z80::i_0xb9(uint16_t args){
+	_CP(registers.C);
+}
+void Z80::i_0xba(uint16_t args){
+	_CP(registers.D);
+}
+void Z80::i_0xbb(uint16_t args){
+	_CP(registers.E);
+}
+void Z80::i_0xbc(uint16_t args){
+	_CP(registers.H);
+}
+void Z80::i_0xbd(uint16_t args){
+	_CP(registers.L);
+}
+void Z80::i_0xbe(uint16_t args){
+	_CP(mem.read(registers.HL));
+}
+void Z80::i_0xbf(uint16_t args){
+	_CP(registers.A);
+}
 
 
 void Z80::i_0xc6(uint16_t args){
@@ -646,7 +673,9 @@ void Z80::i_0xee(uint16_t args){
 void Z80::i_0xf6(uint16_t args){
 	_OR((args&0xFF));
 }
-void Z80::i_0xfe(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xfe(uint16_t args){
+	_CP((args&0xFF));
+}
 
 
 /* 16-bit arithmetic / logical instructions */
