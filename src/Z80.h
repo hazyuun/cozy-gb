@@ -70,6 +70,9 @@ class Z80{
     void _OR(uint8_t n);
     void _XOR(uint8_t n);
     void _CP(uint8_t n);
+    void _INC(uint8_t* n);
+    void _DEC(uint8_t* n);
+
 
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
