@@ -52,7 +52,9 @@ class Z80{
 	    uint16_t SP;
 	    uint16_t PC;
     } registers;
-    
+    bool HALT = false;
+    bool STOP = false;
+    bool IME = false;
     typedef struct {
         uint8_t opcode;
         char*   _asm;
