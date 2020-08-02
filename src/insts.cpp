@@ -784,7 +784,7 @@ void Z80::i_0xfe(uint16_t args){
 #define hcarry16(a,b) (((a&0xf) + (b&0xf))&0xF0)
 
 void Z80::_ADD16(uint16_t* r, uint16_t n){
-	uint16_t result = *r + ((int16_t)args & 0xFF);
+	uint16_t result = *r + (n & 0xFF);
 	bool C = carry16(*r, n);
 	bool H = carry16(*r, n);
 	registers.F &= 0b10111111;
@@ -940,7 +940,9 @@ void Z80::i_0xc4(uint16_t args){
 }
 
 
-void Z80::i_0xc7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xc7(uint16_t args){
+	i_0xcd(0x00);
+}
 void Z80::i_0xc8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xc9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xca(uint16_t args){
@@ -956,7 +958,9 @@ void Z80::i_0xcd(uint16_t args){
 	mem.write(--registers.SP, (registers.PC & 0xFF));
 	i_0xc3(args);
 }
-void Z80::i_0xcf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xcf(uint16_t args){
+	i_0xcd(0x80);
+}
 
 
 
@@ -973,7 +977,9 @@ void Z80::i_0xd4(uint16_t args){
 }
 
 
-void Z80::i_0xd7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xd7(uint16_t args){
+	i_0xcd(0x01);
+}
 void Z80::i_0xd8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xd9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xda(uint16_t args){
@@ -986,14 +992,18 @@ void Z80::i_0xdc(uint16_t args){
 		i_0xcd(args);
 }
 void Z80::i_0xdd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xdf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xdf(uint16_t args){
+	i_0xcd(0x81);
+}
 
 
 void Z80::i_0xe3(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xe4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 
-void Z80::i_0xe7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xe7(uint16_t args){
+	i_0xcd(0x02);
+}
 void Z80::i_0xe9(uint16_t args){
 	registers.PC = mem.read(registers.HL);
 }
@@ -1003,14 +1013,20 @@ void Z80::i_0xe9(uint16_t args){
 void Z80::i_0xeb(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xec(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xed(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xef(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xef(uint16_t args){
+	i_0xcd(0x82);
+}
 
 
 
 
 void Z80::i_0xf4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
-void Z80::i_0xf7(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xf7(uint16_t args){
+	i_0xcd(0x03);
+}
 void Z80::i_0xfc(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::i_0xfd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xff(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xff(uint16_t args){
+	i_0xcd(0x83);
+}

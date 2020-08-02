@@ -73,7 +73,7 @@ class Z80{
     void _INC(uint8_t* n);
     void _DEC(uint8_t* n);
 
-    void ADD16(uint16_t* r, uint16_t n);
+    void _ADD16(uint16_t* r, uint16_t n);
 
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
