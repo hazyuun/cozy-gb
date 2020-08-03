@@ -1023,7 +1023,7 @@ void Z80::i_0xe8(uint16_t args){
 
 /* 8-bit shift, rotate and bit instructions */
 
-void Z80::i_0x17(uint16_t args){
+void Z80::i_0x7(uint16_t args){
 	if(registers.A & 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
 	registers.F &= 0b00011111;
@@ -1032,7 +1032,7 @@ void Z80::i_0x17(uint16_t args){
 	registers.A = result;
 }
 
-void Z80::i_0x1f(uint16_t args){
+void Z80::i_0xf(uint16_t args){
 	if(registers.A & 0x1 == 0x1) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
 	registers.F &= 0b00011111;
@@ -1041,7 +1041,7 @@ void Z80::i_0x1f(uint16_t args){
 	registers.A = result;
 }
 
-void Z80::i_0x7(uint16_t args){
+void Z80::i_0x17(uint16_t args){
 	uint8_t old_c = registers.F & 0x10;
 	if(registers.A & 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
@@ -1051,7 +1051,7 @@ void Z80::i_0x7(uint16_t args){
 	registers.A = result;
 }
 
-void Z80::i_0xf(uint16_t args){
+void Z80::i_0x1f(uint16_t args){
 	uint8_t old_c = registers.F & 0x10;
 	if(registers.A & 0x1 == 0x1) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
@@ -1247,7 +1247,7 @@ void Z80::i_0xfd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 
 /* Prefixed instructions */
 
-void Z80::_RLC(uint8_t* r){
+void Z80::_RL(uint8_t* r){
 	uint8_t old_c = registers.F & 0x10;
 	if((*r)& 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
@@ -1258,7 +1258,7 @@ void Z80::_RLC(uint8_t* r){
 	*r = result;
 }
 
-void Z80::_RL(uint8_t* r){
+void Z80::_RLC(uint8_t* r){
 	if(*r & 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
 	registers.F &= 0b10011111;
@@ -1287,12 +1287,10 @@ void Z80::pi_0x5(uint16_t args){
 	_RLC(&registers.L);
 }
 void Z80::pi_0x6(uint16_t args){
-	unsigned char r = mem.read(registers.HL);
-	uint8_t old_c = registers.F & 0x10;
-	if(r & 0x80 == 0x80) registers.F |= 0x10;
+	if(mem.read(registers.HL) & 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = (r << 1)|(old_c >> 4);
+	registers.F &= 0b10011111;
+	uint8_t result = (mem.read(registers.HL)) << 1;
 	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	mem.write(registers.HL, result);
