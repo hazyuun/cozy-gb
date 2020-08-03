@@ -77,6 +77,9 @@ class Z80{
 
     void _ADD16(uint16_t* r, uint16_t n);
 
+    void _RL(uint8_t* r);
+    void _RLC(uint8_t* r);
+
     /* Unprefixed instructions */
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
