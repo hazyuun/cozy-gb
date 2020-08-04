@@ -1386,14 +1386,37 @@ void Z80::pi_0x17(uint16_t args){
 }
 
 
-void Z80::pi_0x18(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x19(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1a(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1b(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1c(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1d(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1e(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x1f(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::pi_0x18(uint16_t args){
+	_RR(&registers.B);
+}
+void Z80::pi_0x19(uint16_t args){
+	_RR(&registers.C);
+}
+void Z80::pi_0x1a(uint16_t args){
+	_RR(&registers.D);
+}
+void Z80::pi_0x1b(uint16_t args){
+	_RR(&registers.E);
+}
+void Z80::pi_0x1c(uint16_t args){
+	_RR(&registers.H);
+}
+void Z80::pi_0x1d(uint16_t args){
+	_RR(&registers.L);
+}
+void Z80::pi_0x1e(uint16_t args){
+	uint8_t old_c = registers.F & 0x10;
+	if(mem.read(registers.HL) & 0x1 == 0x1) registers.F |= 0x10;
+	else registers.F &= 0b11101111;
+	registers.F &= 0b00011111;
+	uint8_t result = (mem.read(registers.HL) >> 1)|(old_c << 3);
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
+	mem.write(registers.HL, result);
+}
+void Z80::pi_0x1f(uint16_t args){
+	_RR(&registers.A);
+}
 
 void Z80::pi_0x20(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
 void Z80::pi_0x21(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
