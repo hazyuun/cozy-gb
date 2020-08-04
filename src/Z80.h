@@ -79,6 +79,8 @@ class Z80{
 
     void _RL(uint8_t* r);
     void _RLC(uint8_t* r);
+    void _RR(uint8_t* r);
+    void _RRC(uint8_t* r);
 
     /* Unprefixed instructions */
 	void i_0x0(uint16_t args);

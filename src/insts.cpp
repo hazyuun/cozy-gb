@@ -1259,7 +1259,7 @@ void Z80::_RL(uint8_t* r){
 }
 
 void Z80::_RLC(uint8_t* r){
-	if(*r & 0x80 == 0x80) registers.F |= 0x10;
+	if((*r) & 0x80 == 0x80) registers.F |= 0x10;
 	else registers.F &= 0b11101111;
 	registers.F &= 0b10011111;
 	uint8_t result = (*r) << 1;
@@ -1267,6 +1267,29 @@ void Z80::_RLC(uint8_t* r){
 	else registers.F &= 0b01111111;
 	*r = result;
 }
+
+void Z80::_RRC(uint8_t* r){
+	if((*r) & 0x1 == 0x1) registers.F |= 0x10;
+	else registers.F &= 0b11101111;
+	registers.F &= 0b00011111;
+	uint8_t result = (*r) >> 1;
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
+	*r = result;
+}
+
+void Z80::_RR(uint8_t* r){
+	uint8_t old_c = registers.F & 0x10;
+	if((*r) & 0x1 == 0x1) registers.F |= 0x10;
+	else registers.F &= 0b11101111;
+	registers.F &= 0b00011111;
+	uint8_t result = ((*r) >> 1)|(old_c << 3);
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
+	*r = result;
+}
+
+
 
 void Z80::pi_0x0(uint16_t args){
 	_RLC(&registers.B);
@@ -1298,14 +1321,36 @@ void Z80::pi_0x6(uint16_t args){
 void Z80::pi_0x7(uint16_t args){
 	_RLC(&registers.A);
 }
-void Z80::pi_0x8(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0x9(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xa(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xb(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xc(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xe(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::pi_0xf(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::pi_0x8(uint16_t args){
+	_RRC(&registers.B);
+}
+void Z80::pi_0x9(uint16_t args){
+	_RRC(&registers.C);
+}
+void Z80::pi_0xa(uint16_t args){
+	_RRC(&registers.D);
+}
+void Z80::pi_0xb(uint16_t args){
+	_RRC(&registers.E);
+}
+void Z80::pi_0xc(uint16_t args){
+	_RRC(&registers.H);
+}
+void Z80::pi_0xd(uint16_t args){
+	_RRC(&registers.L);
+}
+void Z80::pi_0xe(uint16_t args){
+	if(mem.read(registers.HL) & 0x1 == 0x1) registers.F |= 0x10;
+	else registers.F &= 0b11101111;
+	registers.F &= 0b00011111;
+	uint8_t result = mem.read(registers.HL) >> 1;
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
+	mem.write(registers.HL, result);
+}
+void Z80::pi_0xf(uint16_t args){
+	_RRC(&registers.A);
+}
 
 
 void Z80::pi_0x10(uint16_t args){
