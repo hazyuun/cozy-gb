@@ -10,16 +10,17 @@
 extern Mem mem;
 
 Z80::Z80(){
-    registers.AF = 0x0000;
-    registers.BC = 0x0000;
-    registers.DE = 0x0000;
-    registers.HL = 0x0000;
-    registers.SP = 0x0000;
-    registers.PC = 0x0000;
+    registers.AF = 0x01B0;
+    registers.BC = 0x0013;
+    registers.DE = 0x00D8;
+    registers.HL = 0x014D;
+    registers.SP = 0xFFFE;
+    registers.PC = 0x0100;
 
     std::cout<<"[CPU] ready !"<<std::endl;
 }
 void Z80::cycle(){
+    std::cout<<std::setw(8)<<"0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 
     Z80::inst_t inst;
@@ -37,22 +38,26 @@ void Z80::cycle(){
         registers.PC++;
         inst_hex = (opcode>>8);
         inst_arg = 0x0;
+        //fprintf(stdout, "\t");
         break;
     case 2:
         registers.PC += 2;
         inst_hex = opcode;
         inst_arg = inst_hex & 0x00FF;
+        //fprintf(stdout, "(%x) = %x\t",inst_arg, mem.read(inst_arg));
         break;
     case 3:
 
     	inst_hex = (opcode<<8)|mem.read(registers.PC+2);
     	inst_arg = ((inst_hex&0x00FF)<<8)|((inst_hex&0xFF00)>>8);
     	registers.PC += 3;
+        
+        //fprintf(stdout, "\t");
         break;
     }
 
-    std::cout<<std::setw(8)<<"0x"<<std::hex<<registers.PC<<"\t"
-             <<std::setw(8)<<"0x"<<std::hex<<inst_hex<<"\t\t";
+    
+    std::cout<<std::setw(8)<<"0x"<<std::hex<<inst_hex<<"\t\t";
     if		(inst.size != 1) 	fprintf(stdout, inst._asm, inst_arg);
     else 						fprintf(stdout, inst._asm);
 
@@ -62,6 +67,21 @@ void Z80::cycle(){
     }
 
     (this->*inst.function)(inst_arg);
+
+    std::cout<<"\n*** Registers ***\n";
+    fprintf(stdout, "A = %x \t F = %x\n", registers.A, registers.F);
+    fprintf(stdout, "B = %x \t C = %x\n", registers.B, registers.C);
+    fprintf(stdout, "D = %x \t E = %x\n", registers.D, registers.E);
+    fprintf(stdout, "H = %x \t L = %x\n", registers.H, registers.L);
+    fprintf(stdout, "SP = %x\n", registers.SP);
+    fprintf(stdout, "PC = %x\n", registers.PC);
+    fprintf(stdout, "Z N H C\n%d %d %d %d\n\n",    ((registers.F & 0x80) == 0x80)?1:0,
+                                                ((registers.F & 0x40) == 0x40)?1:0,
+                                                ((registers.F & 0x20) == 0x20)?1:0,
+                                                ((registers.F & 0x10) == 0x10)?1:0);
+    
+
+
 }
 Z80::~Z80(){
 

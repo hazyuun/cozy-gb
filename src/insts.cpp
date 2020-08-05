@@ -436,7 +436,7 @@ void Z80::i_0xf1(uint16_t args){
 
 void Z80::_ADD(uint8_t n){
 	int8_t result = registers.A + n;
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10111111;
 	bool C = carry(registers.A, n);
@@ -448,7 +448,7 @@ void Z80::_ADD(uint8_t n){
 
 void Z80::_ADC(uint8_t n){
 	int8_t result = registers.A + n + ((registers.F & 0x10)>>4);
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10111111;
 	bool C = carry(registers.A, n);
@@ -460,7 +460,7 @@ void Z80::_ADC(uint8_t n){
 
 void Z80::_SUB(uint8_t n){
 	int8_t result = registers.A - n;
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F |= 0b01000000;
 	bool C = (n > registers.A);
@@ -472,7 +472,7 @@ void Z80::_SUB(uint8_t n){
 
 void Z80::_SDC(uint8_t n){
 	int8_t result = registers.A - (n + (registers.F & 0x80)?1:0);
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F |= 0b01000000;
 	bool C = ((n + (registers.F & 0x80)?1:0) > registers.A);
@@ -484,7 +484,7 @@ void Z80::_SDC(uint8_t n){
 
 void Z80::_AND(uint8_t n){
 	int8_t result = registers.A & n;
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10101111;
 	registers.F |= 0b00100000;
@@ -493,7 +493,7 @@ void Z80::_AND(uint8_t n){
 
 void Z80::_OR(uint8_t n){
 	int8_t result = registers.A | n;
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10001111;
 	registers.A = result;
@@ -501,7 +501,7 @@ void Z80::_OR(uint8_t n){
 
 void Z80::_XOR(uint8_t n){
 	int8_t result = registers.A ^ n;
-	if(!result) registers.F |= 0b10000000;
+	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10001111;
 	registers.A = result;
@@ -509,36 +509,36 @@ void Z80::_XOR(uint8_t n){
 
 void Z80::_CP(uint8_t n){
 	int8_t result = registers.A - n;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
 	registers.F |= 0b01000000;
 	bool C = (n > registers.A);
 	bool H = ((n&0xF) > (registers.A&0xF));
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
 	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
 }
 
 void Z80::_INC(uint8_t* n){
 	int8_t result = *n + 1;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
 	registers.F &= 0b10111111;
 	bool C = carry(*n, 1);
 	bool H = hcarry(*n, 1);
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
 	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
 	*n = result;
 }
 
 void Z80::_DEC(uint8_t* n){
 	int8_t result = *n - 1;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
 	registers.F |= 0b01000000;
 	bool C = (1 > *n);
 	bool H = ((1&0xF) > (*n&0xF));
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
 	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	if(result == 0) registers.F |= 0x80;
+	else registers.F &= 0b01111111;
 	*n = result;
 }
 
@@ -1093,11 +1093,11 @@ void Z80::i_0xfb(uint16_t args){
 /* Jumps / calls */
 
 void Z80::i_0x18(uint16_t args){
-	registers.PC += (args & 0xFF);
+	registers.PC += (int8_t)(args & 0xFF);
 }
 
 void Z80::i_0x20(uint16_t args){
-	if((registers.F & 0x80) == 0x0)
+	if((registers.F & 0x80) == 0x00)
 		i_0x18(args);
 }
 
@@ -1127,7 +1127,7 @@ void Z80::i_0xc2(uint16_t args){
 }
 
 void Z80::i_0xc3(uint16_t args){
-	registers.PC = ((args & 0xFF)<<8)|((args & 0xFF00)>>8);
+	registers.PC = args;//((args & 0xFF)<<8)|((args & 0xFF00)>>8);
 }
 
 void Z80::i_0xc4(uint16_t args){
