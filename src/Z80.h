@@ -64,30 +64,32 @@ class Z80{
         void(Z80::*function)(uint16_t);
     } inst_t;
 
-    void _ADD(uint8_t n);
-    void _ADC(uint8_t n);
-    void _SDC(uint8_t n);
-    void _SUB(uint8_t n);
-    void _AND(uint8_t n);
-    void _OR(uint8_t n);
-    void _XOR(uint8_t n);
-    void _CP(uint8_t n);
-    void _INC(uint8_t* n);
-    void _DEC(uint8_t* n);
+	void _ADD(uint8_t n);
+	void _ADC(uint8_t n);
+	void _SDC(uint8_t n);
+	void _SUB(uint8_t n);
+	void _AND(uint8_t n);
+	void _OR(uint8_t n);
+	void _XOR(uint8_t n);
+	void _CP(uint8_t n);
+	void _INC(uint8_t* n);
+	void _DEC(uint8_t* n);
 
-    void _ADD16(uint16_t* r, uint16_t n);
+	void _ADD16(uint16_t* r, uint16_t n);
 
-    void _RL(uint8_t* r);
-    void _RLC(uint8_t* r);
-    void _RR(uint8_t* r);
-    void _RRC(uint8_t* r);
-    void _SLA(uint8_t* r);
-    void _SRA(uint8_t* r);
-    void _SRL(uint8_t* r);
+	void _RL(uint8_t* r);
+	void _RLC(uint8_t* r);
+	void _RR(uint8_t* r);
+	void _RRC(uint8_t* r);
+	void _SLA(uint8_t* r);
+	void _SRA(uint8_t* r);
+	void _SRL(uint8_t* r);
 
-    void _BIT(uint8_t b, uint8_t r);
+	void _BIT(uint8_t b, uint8_t r);
+	void _RES(uint8_t b, uint8_t* r);
+	void _SET(uint8_t b, uint8_t* r);
 
-    /* Unprefixed instructions */
+	/* Unprefixed instructions */
 	void i_0x0(uint16_t args);
 	void i_0x1(uint16_t args);
 	void i_0x2(uint16_t args);
