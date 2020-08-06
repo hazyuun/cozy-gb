@@ -386,47 +386,47 @@ void Z80::i_0xf9(uint16_t args){
 }
 
 void Z80::i_0xc5(uint16_t args){
-	registers.SP--;
-	mem.write(registers.SP--, registers.BC&0xF0);
-	mem.write(registers.SP--, registers.BC&0x0F);
+	mem.write(--registers.SP, registers.B);
+	mem.write(--registers.SP, registers.C);
 }
 
 void Z80::i_0xd5(uint16_t args){
-	registers.SP--;
-	mem.write(registers.SP--, registers.DE&0xF0);
-	mem.write(registers.SP--, registers.DE&0x0F);
+	mem.write(--registers.SP, registers.D);
+	mem.write(--registers.SP, registers.E);
 }
 
 void Z80::i_0xe5(uint16_t args){
-	registers.SP--;
-	mem.write(registers.SP--, registers.HL&0xF0);
-	mem.write(registers.SP--, registers.HL&0x0F);
+	mem.write(--registers.SP, registers.H);
+	mem.write(--registers.SP, registers.L);
 }
 
 void Z80::i_0xf5(uint16_t args){
-	registers.SP--;
-	mem.write(registers.SP--, registers.AF&0xF0);
-	mem.write(registers.SP--, registers.AF&0x0F);
+	mem.write(--registers.SP, registers.A);
+	mem.write(--registers.SP, registers.F);
 }
 
 void Z80::i_0xc1(uint16_t args){
-	registers.B = mem.read(registers.SP++);
-	registers.C = mem.read(registers.SP++);
+	registers.B = mem.read(registers.SP + 1);
+	registers.C = mem.read(registers.SP);
+	registers.SP += 2;
 }
 
 void Z80::i_0xd1(uint16_t args){
-	registers.D = mem.read(registers.SP++);
-	registers.E = mem.read(registers.SP++);
+	registers.D = mem.read(registers.SP + 1);
+	registers.E = mem.read(registers.SP);
+	registers.SP += 2;
 }
 
 void Z80::i_0xe1(uint16_t args){
-	registers.H = mem.read(registers.SP++);
-	registers.L = mem.read(registers.SP++);
+	registers.H = mem.read(registers.SP + 1);
+	registers.L = mem.read(registers.SP);
+	registers.SP += 2;
 }
 
 void Z80::i_0xf1(uint16_t args){
-	registers.A = mem.read(registers.SP++);
-	registers.F = mem.read(registers.SP++);
+	registers.A = mem.read(registers.SP + 1);
+	registers.F = mem.read(registers.SP);
+	registers.SP += 2;
 }
 
 /* 8-bit arithmetic / logical instructions */
@@ -521,10 +521,10 @@ void Z80::_CP(uint8_t n){
 void Z80::_INC(uint8_t* n){
 	int8_t result = *n + 1;
 	registers.F &= 0b10111111;
-	bool C = carry(*n, 1);
+	
 	bool H = hcarry(*n, 1);
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	
 	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	*n = result;
@@ -533,10 +533,9 @@ void Z80::_INC(uint8_t* n){
 void Z80::_DEC(uint8_t* n){
 	int8_t result = *n - 1;
 	registers.F |= 0b01000000;
-	bool C = (1 > *n);
+	
 	bool H = ((1&0xF) > (*n&0xF));
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
 	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	*n = result;

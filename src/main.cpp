@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 //    while(k<length)
 //        std::cout<<"0x"<<std::hex<<(unsigned char*)buffer[k++]<<" ";
     while(I_LIKE_RAIN){
-        std::cin.get();
+        
         cpu.cycle();
     }
     return 0;
