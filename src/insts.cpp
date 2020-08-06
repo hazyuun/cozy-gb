@@ -10,7 +10,7 @@ void Z80::i_0x2(uint16_t args){
 }
 
 void Z80::i_0x6(uint16_t args){
-	registers.B = args & 0xFF;
+	registers.B = (args & 0xFF);
 }
 
 void Z80::i_0xa(uint16_t args){
@@ -18,7 +18,7 @@ void Z80::i_0xa(uint16_t args){
 }
 
 void Z80::i_0xe(uint16_t args){
-	registers.C = args & 0xFF;
+	registers.C = (args & 0xFF);
 }
 
 void Z80::i_0x12(uint16_t args){
@@ -26,7 +26,7 @@ void Z80::i_0x12(uint16_t args){
 }
 
 void Z80::i_0x16(uint16_t args){
-	registers.D = args & 0xFF;
+	registers.D = (args & 0xFF);
 }
 
 void Z80::i_0x1a(uint16_t args){
@@ -34,7 +34,7 @@ void Z80::i_0x1a(uint16_t args){
 }
 
 void Z80::i_0x1e(uint16_t args){
-	registers.E = args & 0xFF;
+	registers.E = (args & 0xFF);
 }
 
 void Z80::i_0x22(uint16_t args){
@@ -43,7 +43,7 @@ void Z80::i_0x22(uint16_t args){
 }
 
 void Z80::i_0x26(uint16_t args){
-	registers.H = args & 0xFF;
+	registers.H = (args & 0xFF);
 }
 
 void Z80::i_0x2a(uint16_t args){
@@ -52,7 +52,7 @@ void Z80::i_0x2a(uint16_t args){
 }
 
 void Z80::i_0x2e(uint16_t args){
-	registers.L = args & 0xFF;
+	registers.L = (args & 0xFF);
 }
 
 void Z80::i_0x32(uint16_t args){
@@ -61,7 +61,7 @@ void Z80::i_0x32(uint16_t args){
 }
 
 void Z80::i_0x36(uint16_t args){
-	mem.write(registers.HL, args&0xFF);
+	mem.write(registers.HL, (unsigned char)(args&0xFF));
 }
 
 void Z80::i_0x3a(uint16_t args){
@@ -70,7 +70,7 @@ void Z80::i_0x3a(uint16_t args){
 }
 
 void Z80::i_0x3e(uint16_t args){
-	registers.A = args & 0xFF;
+	registers.A = (args & 0xFF);
 }
 
 void Z80::i_0x40(uint16_t args){
@@ -326,7 +326,7 @@ void Z80::i_0x7f(uint16_t args){
 }
 
 void Z80::i_0xe0(uint16_t args){
-	mem.write(0xFF00 + (args&0xFF),registers.A);
+	mem.write(0xFF00 + (args&0x00FF),registers.A);
 }
 
 void Z80::i_0xe2(uint16_t args){
@@ -334,11 +334,11 @@ void Z80::i_0xe2(uint16_t args){
 }
 
 void Z80::i_0xea(uint16_t args){
-	mem.write((args&0xFFFF), registers.A);
+	mem.write(args, registers.A);
 }
 
 void Z80::i_0xf0(uint16_t args){
-	registers.A = mem.read(0xFF00 + (args&0xFF));
+	registers.A = mem.read(0xFF00 + (args&0x00FF));
 }
 
 void Z80::i_0xf2(uint16_t args){
@@ -346,35 +346,35 @@ void Z80::i_0xf2(uint16_t args){
 }
 
 void Z80::i_0xfa(uint16_t args){
-	registers.A = args & 0xFFFF;
+	registers.A = (args & 0xFFFF);
 }
 
 /* 16-bit load instructions */
 void Z80::i_0x1(uint16_t args){
-	registers.BC = args & 0xFFFF;
+	registers.BC = (args & 0xFFFF);
 }
 
 void Z80::i_0x8(uint16_t args){
-	mem.write(args & 0xFFFF, registers.SP & 0x0F);
-	mem.write((args+1) & 0xFFFF, registers.SP & 0xF0);
+	mem.write(args, (unsigned char)(registers.SP & 0x00FF));
+	mem.write(args+1, (unsigned char)((registers.SP & 0xFF00)>>8));
 }
 
 void Z80::i_0x11(uint16_t args){
-	registers.DE = args & 0xFFFF;
+	registers.DE = args;
 }
 
 void Z80::i_0x21(uint16_t args){
-	registers.HL = args & 0xFFFF;
+	registers.HL = args;
 }
 
 void Z80::i_0x31(uint16_t args){
-	registers.SP = args & 0xFFFF;
+	registers.SP = args;
 }
 
 void Z80::i_0xf8(uint16_t args){
-	uint16_t result = registers.SP + ((int16_t)args & 0xFF);
-	bool C = (registers.SP&0xFF) && (((int16_t)args & 0xFF)&0xF00);
-	bool H = (((registers.SP&0xf) + (((int16_t)args & 0xFF)&0xf))&0xF0);
+	uint16_t result = registers.SP + (int16_t)(args & 0xFF);
+	bool C = (registers.SP&0xFF) && ((int16_t)(args & 0xFF)&0xF00);
+	bool H = (((registers.SP&0xF) + ((int16_t)(args & 0xFF)&0xF))&0xF0);
 	registers.HL = result;
 	registers.F &= 0b00111111;
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
@@ -451,8 +451,8 @@ void Z80::_ADC(uint8_t n){
 	if(result == 0) registers.F |= 0x80;
 	else registers.F &= 0b01111111;
 	registers.F &= 0b10111111;
-	bool C = carry(registers.A, n);
-	bool H = hcarry(registers.A, n);
+	bool C = (((int)registers.A + (int)n + (int)((registers.F & 0x10)>>4)) > 0xFF);
+	bool H = ((registers.A & 0xF) + (n & 0xF) + ((registers.F & 0x10)>>4)) > 0xF;
 	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
 	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
 	registers.A = result;
@@ -1215,7 +1215,7 @@ void Z80::i_0xe7(uint16_t args){
 }
 
 void Z80::i_0xe9(uint16_t args){
-	registers.PC = mem.read(registers.HL);
+	registers.PC = registers.HL;
 }
 
 void Z80::i_0xef(uint16_t args){

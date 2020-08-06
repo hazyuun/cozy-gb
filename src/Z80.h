@@ -55,6 +55,7 @@ class Z80{
     bool HALT = false;
     bool STOP = false;
     bool IME = false;
+    long cycles = 0;
     typedef struct {
         uint8_t opcode;
         char*   _asm;

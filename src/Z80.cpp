@@ -64,10 +64,19 @@ void Z80::cycle(){
     }
     if(!inst.function){
     	std::cout<<"\nUnknown opcode ! "<<std::endl;
+        debug = true;
     	return;
     }
 
     (this->*inst.function)(inst_arg);
+    
+    /* WARNING ! messy stuff ahead ! but it is temporary */
+    cycles += inst.cycles;
+    if(cycles%450==0)
+        mem.write(0xFF44, mem.read(0xFF44)+1);
+    if(mem.read(0xFF44)==153)
+        mem.write(0xFF44, 0x0);
+
     if(debug){
         std::cout<<"\n*** Registers ***\n";
         fprintf(stdout, "A = %x \t F = %x\n", registers.A, registers.F);
@@ -84,12 +93,18 @@ void Z80::cycle(){
         std::cin.get();
     }
 
-
-
-    if (mem.read(0xff02) == (unsigned char)0x81) {
+#if 0
+    if(registers.PC == 0xC249) {
         debug = true;
+        for(uint16_t a= 0xFF40; a < 0xFF50; a++){
+            if((a & 0xF) == 0) printf("\n[ %4x ] ", a);
+            printf(" %2x", mem.read(a));
+        }
+    }
+#endif
+    if (mem.read(0xff02) == (unsigned char)0x81) {
         unsigned char c = mem.read(0xff01);
-        printf("\n SERIAL : 0x%x \t %c ", c, c);
+        printf("%c", c);
         mem.write(0xff02, 0x0);
     }
 
