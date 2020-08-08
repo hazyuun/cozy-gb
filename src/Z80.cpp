@@ -16,7 +16,7 @@ Z80::Z80(){
     registers.HL = 0x014D;
     registers.SP = 0xFFFE;
     registers.PC = 0x0100;
-
+    cycles = 144;
     std::cout<<"[CPU] ready !"<<std::endl;
 }
 void Z80::cycle(){
@@ -67,9 +67,11 @@ void Z80::cycle(){
         debug = true;
     	return;
     }
-
+    //uint8_t N = registers.F & 0b01000000;
     (this->*inst.function)(inst_arg);
-    
+    //if((registers.F & 0b01000000)!=N){
+    //    std::cout<<"\nN changed ! "<<inst._asm;
+    //}
     /* WARNING ! messy stuff ahead ! but it is temporary */
     cycles += inst.cycles;
     if(cycles%450==0)
@@ -78,6 +80,11 @@ void Z80::cycle(){
         mem.write(0xFF44, 0x0);
 
     if(debug){
+        std::cout<<"\n*** Memory ***\n";
+        for(uint16_t a= 0xD800; a < 0xD810; a++){
+            if((a & 0xF) == 0) printf("\n[ %4x ] ", a);
+            printf(" %2x", mem.read(a));
+        }
         std::cout<<"\n*** Registers ***\n";
         fprintf(stdout, "A = %x \t F = %x\n", registers.A, registers.F);
         fprintf(stdout, "B = %x \t C = %x\n", registers.B, registers.C);
@@ -94,12 +101,9 @@ void Z80::cycle(){
     }
 
 #if 0
-    if(registers.PC == 0xC249) {
+    if(registers.PC < 0xC7F9 && registers.PC >= 0xC7F3 && registers.A == 0x90){//0xC24C) {
         debug = true;
-        for(uint16_t a= 0xFF40; a < 0xFF50; a++){
-            if((a & 0xF) == 0) printf("\n[ %4x ] ", a);
-            printf(" %2x", mem.read(a));
-        }
+        
     }
 #endif
     if (mem.read(0xff02) == (unsigned char)0x81) {

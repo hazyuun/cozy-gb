@@ -7,6 +7,7 @@
 #include <iostream>
 
 Mem::Mem(){
+    //write(0xFF44, 0x90);
     std::cout<<"[MEM] ready !"<<std::endl;
 }
 void Mem::load(unsigned char* data, uint64_t size, uint16_t addr){
@@ -14,6 +15,8 @@ void Mem::load(unsigned char* data, uint64_t size, uint16_t addr){
         *(memory + pos) = *(data + pos - addr);
     }
 }
+
+
 
 unsigned char Mem::read(uint16_t addr){
     return memory[addr];
