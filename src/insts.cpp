@@ -8,7 +8,7 @@ extern Mem mem;
 #define hcarry(result,value,dest) (((result ^ value ^ dest) & 0x10) == 0x10);
 
 void Z80::_ADD(uint8_t n){
-	int8_t result = registers.A + n;
+	uint8_t result = registers.A + n;
 	
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
@@ -23,7 +23,7 @@ void Z80::_ADD(uint8_t n){
 }
 
 void Z80::_ADC(uint8_t n){
-	int8_t result = registers.A + n + ((registers.F & 0x10)>>4);
+	uint8_t result = registers.A + n + ((registers.F & 0x10)>>4);
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
 	RESET_FLAG(N_FLAG_MASK);
@@ -47,12 +47,19 @@ void Z80::_SUB(uint8_t n){
 }
 
 void Z80::_SDC(uint8_t n){
-	int8_t result = registers.A - (n + (registers.F & 0x80)?1:0);
+	int32_t dest 	= static_cast<uint32_t>(registers.A) & 0xFF;
+	int32_t sub 	= static_cast<uint32_t>(n) & 0xFF;
+	int32_t cflag 	= (C_FLAG_TEST)?1:0;
+	
+	int32_t result = dest - sub - cflag;
+	
+	
+	SET_FLAG(N_FLAG_MASK);
+	
+	bool C = result < 0;
+	bool H =  ((((result &= 0xFF) ^ n ^ registers.A) & 0x10) == 0x10);
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
-	SET_FLAG(N_FLAG_MASK);
-	bool C = result < 0;
-	bool H =  (((result ^ n ^ registers.A) & 0x10) == 0x10);
 	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
 	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
 	registers.A = result;
@@ -142,32 +149,40 @@ void Z80::_ADD16(uint16_t* r, int8_t n){
 	*r = result;
 }
 void Z80::_RL(uint8_t* r){
-	uint8_t old_c = C_FLAG_TEST?1:0;
-	if((*r)& 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	uint8_t old_c = registers.F & 0x10;
+	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
-	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
-	//if((*r & 0x80) == 0x80) ? registers.F |= 0x10: registers.F &= 0b11101111; 
-	uint8_t result = ((*r) << 1)|(old_c);
-	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	//if((*r & 0x01) == 0x01) ? registers.F |= 0x10: registers.F &= 0b11101111; 
+	uint8_t result = ((*r) << 1);
+	if(old_c) result |= 0x01;
+	else result &= 0xFE;
+	if(result == 0 ) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
 	*r = result;
 }
 
 void Z80::_RLC(uint8_t* r){
-	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	uint8_t msb = (*r) & 0x80;
+	if(msb == 0x80) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
 	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	uint8_t result = (*r) << 1;
+	if(msb == 0x80) result |= 0x01;
+	else result &= 0xFE;
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
 	*r = result;
 }
 
 void Z80::_RRC(uint8_t* r){
-	if((*r) & 0x1 == 0x1) SET_FLAG(C_FLAG_MASK);
+	uint8_t lsb = (*r) & 0x1;
+	if(lsb == 0x1) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
 	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	uint8_t result = (*r) >> 1;
+	if(lsb == 0x1) result |= 0x80;
+	else result &= 0x7F;
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
 	*r = result;
@@ -219,7 +234,12 @@ void Z80::_SRL(uint8_t* r){
 	*r = result;
 }
 
-#define SWAP(r) r = ((r & 0xF) << 8) | ((r & 0xF0) >> 8);
+void Z80::_SWAP(uint8_t& r){
+	r = ((r & 0xF) << 4) | ((r & 0xF0) >> 4);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK | C_FLAG_MASK);
+	if(r == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+} 
 
 void Z80::_BIT(uint8_t b, uint8_t r){
 	RESET_FLAG(N_FLAG_MASK);
@@ -561,7 +581,7 @@ void Z80::i_0x7f(uint16_t args){
 }
 
 void Z80::i_0xe0(uint16_t args){
-	mem.write(0xFF00 + (args&0x00FF),registers.A);
+	mem.write((uint16_t)(0xFF00 + (args&0x00FF)),registers.A);
 }
 
 void Z80::i_0xe2(uint16_t args){
@@ -1494,28 +1514,30 @@ void Z80::pi_0x2f(uint16_t args){
 /* SWAP */
 
 void Z80::pi_0x30(uint16_t args){
-	SWAP(registers.B);
+	_SWAP(registers.B);
 }
 void Z80::pi_0x31(uint16_t args){
-	SWAP(registers.C);
+	_SWAP(registers.C);
 }
 void Z80::pi_0x32(uint16_t args){
-	SWAP(registers.D);
+	_SWAP(registers.D);
 }
 void Z80::pi_0x33(uint16_t args){
-	SWAP(registers.E);
+	_SWAP(registers.E);
 }
 void Z80::pi_0x34(uint16_t args){
-	SWAP(registers.H);
+	_SWAP(registers.H);
 }
 void Z80::pi_0x35(uint16_t args){
-	SWAP(registers.L);
+	_SWAP(registers.L);
 }
 void Z80::pi_0x36(uint16_t args){
-	mem.write(registers.HL, ((mem.read(registers.HL) & 0xF) << 8) | ((mem.read(registers.HL) & 0xF0) >> 8));
+	uint8_t temp = mem.read(registers.HL);
+	_SWAP(temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x37(uint16_t args){
-	SWAP(registers.A);
+	_SWAP(registers.A);
 }
 
 void Z80::pi_0x38(uint16_t args){

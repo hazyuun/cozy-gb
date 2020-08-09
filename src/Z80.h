@@ -102,6 +102,7 @@ class Z80{
 	void _SRA(uint8_t* r);
 	void _SRL(uint8_t* r);
 
+	void _SWAP(uint8_t& r);
 	void _BIT(uint8_t b, uint8_t r);
 	void _RES(uint8_t b, uint8_t* r);
 	void _SET(uint8_t b, uint8_t* r);
