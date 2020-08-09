@@ -1,7 +1,7 @@
 # gb-niou
 A gameboy emulator !
 
-## Blargs tests
+## Blarggs tests
 - [x] 01-special.gb
 - [ ] 02-interrupts.gb
 - [ ] 03-op sp,hl.gb
