@@ -20,8 +20,8 @@ extern unsigned char* ROM;
 #define H_FLAG_TEST	((registers.F & H_FLAG_MASK) == H_FLAG_MASK)
 #define C_FLAG_TEST	((registers.F & C_FLAG_MASK) == C_FLAG_MASK)
 
-#define SET_FLAG(x)	(registers.F |= x)	
-#define RESET_FLAG(x)	(registers.F &= ~x)
+#define SET_FLAG(x)	(registers.F |= (x))	
+#define RESET_FLAG(x)	(registers.F &= ~(x))
 
 class Z80{
     private:
@@ -92,6 +92,7 @@ class Z80{
 	void _DEC(uint8_t* n);
 
 	void _ADD16(uint16_t* r, uint16_t n);
+	void _ADD16(uint16_t* r, int8_t n);
 
 	void _RL(uint8_t* r);
 	void _RLC(uint8_t* r);

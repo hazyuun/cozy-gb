@@ -130,7 +130,17 @@ void Z80::_ADD16(uint16_t* r, uint16_t n){
 	
 	*r = result;
 }
-
+void Z80::_ADD16(uint16_t* r, int8_t n){
+	uint16_t result = *r + (n);
+	bool C = ((result & 0xFF) < (*r & 0xFF));
+	bool H = ((result & 0xF) < (*r & 0xF));
+     
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK);
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	
+	*r = result;
+}
 void Z80::_RL(uint8_t* r){
 	uint8_t old_c = C_FLAG_TEST?1:0;
 	if((*r)& 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
@@ -598,7 +608,7 @@ void Z80::i_0x31(uint16_t args){
 
 void Z80::i_0xf8(uint16_t args){
 	uint16_t result = registers.SP;
-	_ADD16(&result, args & 0xFF);
+	_ADD16(&result, (int8_t)(args & 0xFF));
 	mem.write(registers.HL, result);
 }
 
@@ -1103,8 +1113,7 @@ void Z80::i_0x3b(uint16_t args){
 }
 
 void Z80::i_0xe8(uint16_t args){
-	_ADD16(&registers.SP, (args & 0xFF));
-	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK);
+	_ADD16(&registers.SP, (int8_t)(args & 0xFF));
 }
 
 
