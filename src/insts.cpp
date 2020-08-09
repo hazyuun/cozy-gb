@@ -3,6 +3,231 @@
 
 extern Mem mem;
 
+
+#define carry(result,dest) (result < dest)
+#define hcarry(result,value,dest) (((result ^ value ^ dest) & 0x10) == 0x10);
+
+void Z80::_ADD(uint8_t n){
+	int8_t result = registers.A + n;
+	
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK);
+	
+	bool C = carry(result,registers.A);
+	bool H = hcarry(result,n,registers.A);
+	
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	registers.A = result;
+}
+
+void Z80::_ADC(uint8_t n){
+	int8_t result = registers.A + n + ((registers.F & 0x10)>>4);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK);
+	bool C = (((int)registers.A + (int)n + (int)((registers.F & 0x10)>>4)) > 0xFF);
+	bool H = ((registers.A & 0xF) + (n & 0xF) + ((registers.F & 0x10)>>4)) > 0xF;
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	registers.A = result;
+}
+
+void Z80::_SUB(uint8_t n){
+	int8_t result = registers.A - n;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	SET_FLAG(N_FLAG_MASK);
+	bool C = (n > registers.A);
+	bool H = ((n&0xF) > (registers.A&0xF));
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	registers.A = result;
+}
+
+void Z80::_SDC(uint8_t n){
+	int8_t result = registers.A - (n + (registers.F & 0x80)?1:0);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	SET_FLAG(N_FLAG_MASK);
+	bool C = result < 0;
+	bool H =  (((result ^ n ^ registers.A) & 0x10) == 0x10);
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	registers.A = result;
+}
+
+void Z80::_AND(uint8_t n){
+	uint8_t result = registers.A & n;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | C_FLAG_MASK);
+	SET_FLAG(H_FLAG_MASK);
+	registers.A = result;
+}
+
+void Z80::_OR(uint8_t n){
+	uint8_t result = registers.A | n;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK | C_FLAG_MASK);
+	registers.A = result;
+}
+
+void Z80::_XOR(uint8_t n){
+	uint8_t result = registers.A ^ n;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK | C_FLAG_MASK);
+	registers.A = result;
+}
+
+void Z80::_CP(uint8_t n){
+	uint8_t result = registers.A - n;
+	SET_FLAG(N_FLAG_MASK);
+	bool C = (n > registers.A);
+	bool H = ((n&0xF) > (registers.A&0xF));
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+}
+
+void Z80::_INC(uint8_t* n){
+	int8_t result = *n + 1;
+	RESET_FLAG(N_FLAG_MASK);
+	
+	bool H = (((*n >> 3) & 1) != 0 && (((result >> 3) & 1) == 0));
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*n = result;
+}
+
+void Z80::_DEC(uint8_t* n){
+	int8_t result = *n - 1;
+	SET_FLAG(N_FLAG_MASK);
+	
+	bool H = (((result ^ 0x01 ^ (*n)) & 0x10) == 0x10);
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*n = result;
+}
+
+#define carry16(result, dest) (result < dest) // (a&0xFF) && (b&0xF00)
+#define hcarry16(result,n, dest) (((result ^ dest ^ n) & 0x1000) != 0) //(((a&0xf) + (b&0xf))&0xF0)
+
+void Z80::_ADD16(uint16_t* r, uint16_t n){
+	uint16_t result = *r + (n);
+	bool C = carry16(result,*r);
+	bool H = hcarry16(result,n,*r);
+	
+	RESET_FLAG(N_FLAG_MASK);
+	if(H) SET_FLAG(H_FLAG_MASK); else RESET_FLAG(H_FLAG_MASK);;
+	if(C) SET_FLAG(C_FLAG_MASK); else RESET_FLAG(C_FLAG_MASK);;
+	
+	*r = result;
+}
+
+void Z80::_RL(uint8_t* r){
+	uint8_t old_c = C_FLAG_TEST?1:0;
+	if((*r)& 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
+	//if((*r & 0x80) == 0x80) ? registers.F |= 0x10: registers.F &= 0b11101111; 
+	uint8_t result = ((*r) << 1)|(old_c);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_RLC(uint8_t* r){
+	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	uint8_t result = (*r) << 1;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_RRC(uint8_t* r){
+	if((*r) & 0x1 == 0x1) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	uint8_t result = (*r) >> 1;
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_RR(uint8_t* r){
+	uint8_t old_c = registers.F & 0x10;
+	if((*r) & 0x1 == 0x1) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	//if((*r & 0x01) == 0x01) ? registers.F |= 0x10: registers.F &= 0b11101111; 
+	uint8_t result = ((*r) >> 1)|(old_c << 3);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_SLA(uint8_t* r){
+	uint8_t result = ((*r) << 1);
+	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_SRA(uint8_t* r){
+	uint8_t result = ((*r) >> 1) | ((*r) & 0x80);
+	if((*r) & 0x01 == 0x01) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	/*
+	if((*r) & 0x01 == 0x01) registers.F |= 0x10;
+	else registers.F &= 0b11101111;
+	*/
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+void Z80::_SRL(uint8_t* r){
+	uint8_t result = ((*r) >> 1);
+	if((*r) & 0x01 == 0x01) SET_FLAG(C_FLAG_MASK);
+	else RESET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	*r = result;
+}
+
+#define SWAP(r) r = ((r & 0xF) << 8) | ((r & 0xF0) >> 8);
+
+void Z80::_BIT(uint8_t b, uint8_t r){
+	RESET_FLAG(N_FLAG_MASK);
+	SET_FLAG(H_FLAG_MASK);
+	
+	if((r & (1 << b)) == 0x0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	
+}
+
+void Z80::_RES(uint8_t b, uint8_t* r){
+	(*r) &= (~(0x01 << b));
+}
+
+void Z80::_SET(uint8_t b, uint8_t* r){
+	(*r) |= (0x01 << b);
+}
+
 /* 8-bit load instructions */
 
 void Z80::i_0x2(uint16_t args){
@@ -372,13 +597,9 @@ void Z80::i_0x31(uint16_t args){
 }
 
 void Z80::i_0xf8(uint16_t args){
-	uint16_t result = registers.SP + (int8_t)(args);
-	bool C = ((result & 0xFF) < ((int8_t)(args) & 0xFF));
-	bool H = ((result & 0xF) < ((int8_t)(args) & 0xF));
-	registers.HL = result;
-	registers.F &= 0b00111111;
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	uint16_t result = registers.SP;
+	_ADD16(&result, args & 0xFF);
+	mem.write(registers.HL, result);
 }
 
 void Z80::i_0xf9(uint16_t args){
@@ -432,116 +653,6 @@ void Z80::i_0xf1(uint16_t args){
 
 /* 8-bit arithmetic / logical instructions */
 
-#define carry(a,b) (((a&0x80) && (b&0x80)) == 128)
-#define hcarry(a,b) ((((a&0xf) + (b&0xf))&0x10) == 16)
-
-void Z80::_ADD(uint8_t n){
-	int8_t result = registers.A + n;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(registers.A, n);
-	bool H = hcarry(registers.A, n);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
-}
-
-void Z80::_ADC(uint8_t n){
-	int8_t result = registers.A + n + ((registers.F & 0x10)>>4);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = (((int)registers.A + (int)n + (int)((registers.F & 0x10)>>4)) > 0xFF);
-	bool H = ((registers.A & 0xF) + (n & 0xF) + ((registers.F & 0x10)>>4)) > 0xF;
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
-}
-
-void Z80::_SUB(uint8_t n){
-	int8_t result = registers.A - n;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (n > registers.A);
-	bool H = ((n&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
-}
-
-void Z80::_SDC(uint8_t n){
-	int8_t result = registers.A - (n + (registers.F & 0x80)?1:0);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = ((n + (registers.F & 0x80)?1:0) > registers.A);
-	bool H = (((n + (registers.F & 0x80)?1:0)&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	registers.A = result;
-}
-
-void Z80::_AND(uint8_t n){
-	uint8_t result = registers.A & n;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10101111;
-	registers.F |= 0b00100000;
-	registers.A = result;
-}
-
-void Z80::_OR(uint8_t n){
-	uint8_t result = registers.A | n;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10000000;
-	registers.A = result;
-}
-
-void Z80::_XOR(uint8_t n){
-	uint8_t result = registers.A ^ n;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10001111;
-	registers.A = result;
-}
-
-void Z80::_CP(uint8_t n){
-	int8_t result = registers.A - (int8_t)n;
-	registers.F |= 0b01000000;
-	bool C = (n > registers.A);
-	bool H = ((n&0xF) > (registers.A&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-}
-
-void Z80::_INC(uint8_t* n){
-	int8_t result = *n + 1;
-	registers.F &= 0b10111111;
-	
-	bool H = hcarry(*n, 1);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*n = result;
-}
-
-void Z80::_DEC(uint8_t* n){
-	int8_t result = *n - 1;
-	registers.F |= 0b01000000;
-	
-	bool H = (((result ^ 0x01 ^ (*n)) & 0x10) == 0x10);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*n = result;
-}
-
 void Z80::i_0x4(uint16_t args){
 	_INC(&registers.B);
 }
@@ -583,24 +694,25 @@ void Z80::i_0x25(uint16_t args){
 }
 
 void Z80::i_0x27(uint16_t args){
-	if(registers.F & 0x40 == 0x40) {
-		if(registers.F & 0x10 == 0x10) {
+	if(N_FLAG_TEST) {
+		if(C_FLAG_TEST) {
 			registers.A -= 0x60;
-			//registers.F |= 0x10;
+			SET_FLAG(C_FLAG_MASK);
 		}
-		if(registers.F & 0x20 == 0x20)
+		if(H_FLAG_TEST)
 			registers.A -= 0x6;
 	}else{
-		if((registers.F & 0x10 == 0x10) || registers.A > 0x99) {
+		if(C_FLAG_TEST || registers.A > 0x99) {
 			registers.A += 0x60;
-			registers.F |= 0x10;
+			SET_FLAG(C_FLAG_MASK);
 		}
-		if (((registers.A & 0xF)>0x9) || (registers.F & 0x20 == 0x20))
+		if (H_FLAG_TEST || (registers.A & 0xF) > 0x9)
 			registers.A += 0x6;
 	}
 
-	if(registers.A) registers.F &= 0b01111111; else registers.F |= 0b10000000;
-	registers.F &= 0b110111111;
+	if(registers.A == 0) SET_FLAG(Z_FLAG_MASK);
+	else RESET_FLAG(Z_FLAG_MASK);
+	RESET_FLAG(H_FLAG_MASK);
 }
 
 void Z80::i_0x2c(uint16_t args){
@@ -612,38 +724,25 @@ void Z80::i_0x2d(uint16_t args){
 }
 
 void Z80::i_0x2f(uint16_t args){
-	registers.F |= 0b01100000;
+	SET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	registers.A = ~registers.A;
 }
 
 void Z80::i_0x34(uint16_t args){
-	int8_t result = mem.read(registers.HL) + 1;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F &= 0b10111111;
-	bool C = carry(mem.read(registers.HL), 1);
-	bool H = hcarry(mem.read(registers.HL), 1);
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	mem.write(registers.HL,result);
+	uint8_t result = mem.read(registers.HL);
+	_INC(&result);
+	mem.write(registers.HL, result);
 }
 
 void Z80::i_0x35(uint16_t args){
-	int8_t result = mem.read(registers.HL) - 1;
-	if(!result) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-	registers.F |= 0b01000000;
-	bool C = (1 > mem.read(registers.HL));
-	bool H = ((1&0xF) > (mem.read(registers.HL)&0xF));
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
+	uint8_t result = mem.read(registers.HL);
+	_DEC(&result);
 	mem.write(registers.HL, result);
 }
 
 void Z80::i_0x37(uint16_t args){
-	registers.F &= 0b10011111;
-	registers.F |= 0b00010000;
-
+	SET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 }
 
 void Z80::i_0x3c(uint16_t args){
@@ -655,11 +754,11 @@ void Z80::i_0x3d(uint16_t args){
 }
 
 void Z80::i_0x3f(uint16_t args){
-	if(registers.F & 0x10 == 0x10)
-		registers.F &= 0b11101111;
+	if(C_FLAG_TEST)
+		RESET_FLAG(C_FLAG_MASK);
 	else
-		registers.F |= 0b00010000;
-	registers.F &= 0b10011111;
+		SET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 }
 
 void Z80::i_0x80(uint16_t args){
@@ -955,32 +1054,12 @@ void Z80::i_0xfe(uint16_t args){
 
 /* 16-bit arithmetic / logical instructions */
 
-#define carry16(result,n) ((result & 0xFF) < ((n) & 0xFF)) // (a&0xFF) && (b&0xF00)
-#define hcarry16(result,n) ((result & 0xF) < ((n) & 0xF)) //(((a&0xf) + (b&0xf))&0xF0)
-
-void Z80::_ADD16(uint16_t* r, int16_t n){
-	uint16_t result = *r + (n);
-	bool C = carry16(result,n);
-	bool H = hcarry16(result,n);
-	
-	registers.F &= 0b10111111;
-	if(H) registers.F |= 0b00100000; else registers.F &= 0b11011111;
-	if(C) registers.F |= 0b00010000; else registers.F &= 0b11101111;
-	*r = result;
-}
-
 void Z80::i_0x3(uint16_t args){
 	registers.BC++;
 }
 
 void Z80::i_0x9(uint16_t args){
-	uint16_t result = registers.HL + (int16_t)registers.BC;
-
-	registers.F &= 0b10111111;
-	(result < registers.HL) ? registers.F|=0x10 : registers.F&=0b11101111;
-	(((result ^ registers.HL ^ (int16_t)registers.BC) & 0x1000) != 0) ? registers.F|=0x20 : registers.F&=0b11011111;
-
-	registers.HL = result;
+	_ADD16(&registers.HL, registers.BC);
 }
 
 void Z80::i_0xb(uint16_t args){
@@ -992,13 +1071,7 @@ void Z80::i_0x13(uint16_t args){
 }
 
 void Z80::i_0x19(uint16_t args){
-	uint16_t result = registers.HL + (int16_t)registers.DE;
-
-	registers.F &= 0b10111111;
-	(result < registers.HL) ? registers.F|=0x10 : registers.F&=0b11101111;
-	(((result ^ registers.HL ^ (int16_t)registers.DE) & 0x1000) != 0) ? registers.F|=0x20 : registers.F&=0b11011111;
-
-	registers.HL = result;
+	_ADD16(&registers.HL, registers.DE);
 }
 
 void Z80::i_0x1b(uint16_t args){
@@ -1010,13 +1083,7 @@ void Z80::i_0x23(uint16_t args){
 }
 
 void Z80::i_0x29(uint16_t args){
-	uint16_t result = registers.HL + (int16_t)registers.HL;
-
-	registers.F &= 0b10111111;
-	(result < registers.HL) ? registers.F|=0x10 : registers.F&=0b11101111;
-	(((result ^ registers.HL ^ (int16_t)registers.HL) & 0x1000) != 0) ? registers.F|=0x20 : registers.F&=0b11011111;
-
-	registers.HL = result;
+	_ADD16(&registers.HL, registers.HL);
 }
 
 void Z80::i_0x2b(uint16_t args){
@@ -1028,19 +1095,7 @@ void Z80::i_0x33(uint16_t args){
 }
 
 void Z80::i_0x39(uint16_t args){
-	//uint8_t Z_backup = registers.F & 0x80;
-	
-	uint16_t result = registers.HL + (int16_t)registers.SP;
-
-	registers.F &= 0b10111111;
-	(result < registers.HL) ? registers.F|=0x10 : registers.F&=0b11101111;
-	(((result ^ registers.HL ^ (int16_t)registers.SP) & 0x1000) != 0) ? registers.F|=0x20 : registers.F&=0b11011111;
-
-	registers.HL = result;
-
-	//_ADD16(&registers.HL, registers.SP);
-	//if(Z_backup == 0x80) registers.F |= 0x80;
-	//else registers.F &= 0b01111111;	 
+	_ADD16(&registers.HL, registers.SP);
 }
 
 void Z80::i_0x3b(uint16_t args){
@@ -1048,48 +1103,31 @@ void Z80::i_0x3b(uint16_t args){
 }
 
 void Z80::i_0xe8(uint16_t args){
-	_ADD16(&registers.SP, (int8_t)args);
-	registers.F &= 0b00111111;
-
+	_ADD16(&registers.SP, (args & 0xFF));
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK);
 }
 
 
 /* 8-bit shift, rotate and bit instructions */
 
 void Z80::i_0x7(uint16_t args){
-	if(registers.A & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = registers.A << 1;
-
-	registers.A = result;
+	_RLC(&registers.A);
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
 }
 
 void Z80::i_0xf(uint16_t args){
 	_RRC(&registers.A);
-	registers.F &= 0b00010000;
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
 }
 
 void Z80::i_0x17(uint16_t args){
-	uint8_t old_c = registers.F & 0x10;
-	if(registers.A & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = (registers.A << 1)|(old_c >> 4);
-
-	registers.A = result;
+	_RL(&registers.A);
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
 }
 
 void Z80::i_0x1f(uint16_t args){
-	uint8_t old_c = registers.F & 0x10;
-	
-	registers.F &= 0b10011111;
-	if((registers.A & 0x01) == 0x01) registers.F |= 0x10; else  registers.F &= 0b11101111; 
-	uint8_t result = (registers.A >> 1)|(old_c << 3);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	
-	registers.A = result;
+	_RR(&registers.A);
+	RESET_FLAG(Z_FLAG_MASK | N_FLAG_MASK | H_FLAG_MASK);
 }
 
 
@@ -1128,32 +1166,32 @@ void Z80::i_0x18(uint16_t args){
 }
 
 void Z80::i_0x20(uint16_t args){
-	if((registers.F & 0x80) == 0x00)
+	if(!Z_FLAG_TEST)
 		i_0x18(args);
 }
 
 void Z80::i_0x28(uint16_t args){
-	if((registers.F & 0x80) == 0x80)
+	if(Z_FLAG_TEST)
 		i_0x18(args);
 }
 
 void Z80::i_0x30(uint16_t args){
-	if((registers.F & 0x10) == 0x0)
+	if(!C_FLAG_TEST)
 		i_0x18(args);
 }
 
 void Z80::i_0x38(uint16_t args){
-	if((registers.F & 0x10) == 0x10)
+	if(C_FLAG_TEST)
 		i_0x18(args);
 }
 
 void Z80::i_0xc0(uint16_t args){
-	if((registers.F & 0x80) == 0x0)
+	if(!Z_FLAG_TEST)
 		i_0xc9(args);
 }
 
 void Z80::i_0xc2(uint16_t args){
-	if((registers.F & 0x80) == 0x0)
+	if(!Z_FLAG_TEST)
 		i_0xc3(args);
 }
 
@@ -1162,7 +1200,7 @@ void Z80::i_0xc3(uint16_t args){
 }
 
 void Z80::i_0xc4(uint16_t args){
-	if((registers.F & 0x80) == 0x0)
+	if(!Z_FLAG_TEST)
 		i_0xcd(args);
 }
 
@@ -1171,7 +1209,7 @@ void Z80::i_0xc7(uint16_t args){
 }
 
 void Z80::i_0xc8(uint16_t args){
-	if((registers.F & 0x80) == 0x80)
+	if(Z_FLAG_TEST)
 		i_0xc9(args);
 }
 
@@ -1180,12 +1218,12 @@ void Z80::i_0xc9(uint16_t args){
 }
 
 void Z80::i_0xca(uint16_t args){
-	if((registers.F & 0x80) == 0x80)
+	if(Z_FLAG_TEST)
 		i_0xc3(args);
 }
 
 void Z80::i_0xcc(uint16_t args){
-	if((registers.F & 0x80) == 0x80)
+	if(Z_FLAG_TEST)
 		i_0xcd(args);
 }
 
@@ -1200,17 +1238,17 @@ void Z80::i_0xcf(uint16_t args){
 }
 
 void Z80::i_0xd0(uint16_t args){
-	if((registers.F & 0x10) == 0x0)
+	if(!C_FLAG_TEST)
 		i_0xc9(args);
 }
 
 void Z80::i_0xd2(uint16_t args){
-	if((registers.F & 0x10) == 0x0)
+	if(!C_FLAG_TEST)
 		i_0xc3(args);
 }
 
 void Z80::i_0xd4(uint16_t args){
-	if((registers.F & 0x10) == 0x0)
+	if(!C_FLAG_TEST)
 		i_0xcd(args);
 }
 
@@ -1219,7 +1257,7 @@ void Z80::i_0xd7(uint16_t args){
 }
 
 void Z80::i_0xd8(uint16_t args){
-	if((registers.F & 0x10) == 0x10)
+	if(C_FLAG_TEST)
 		i_0xc9(args);
 }
 
@@ -1229,12 +1267,12 @@ void Z80::i_0xd9(uint16_t args){
 }
 
 void Z80::i_0xda(uint16_t args){
-	if((registers.F & 0x10) == 0x10)
+	if(C_FLAG_TEST)
 		i_0xc3(args);
 }
 
 void Z80::i_0xdc(uint16_t args){
-	if((registers.F & 0x10) == 0x10)
+	if(C_FLAG_TEST)
 		i_0xcd(args);
 }
 
@@ -1263,96 +1301,20 @@ void Z80::i_0xff(uint16_t args){
 }
 
 /* Unsupported opcodes */
-void Z80::i_0xd3(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xdb(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xdd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xe3(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xe4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xeb(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xec(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xed(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xf4(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xfc(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
-void Z80::i_0xfd(uint16_t args){std::cout<<"\nNOT IMPLEMENTED YET\n";}
+void Z80::i_0xd3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xdb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xdd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xe3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xe4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xeb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xec(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xed(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xf4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xfc(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xfd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
 
 
 /* Prefixed instructions */
-
-void Z80::_RL(uint8_t* r){
-	uint8_t old_c = registers.F & 0x10;
-	if((*r)& 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	//if((*r & 0x80) == 0x80) ? registers.F |= 0x10: registers.F &= 0b11101111; 
-	uint8_t result = ((*r) << 1)|(old_c >> 4);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_RLC(uint8_t* r){
-	if((*r) & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	uint8_t result = (*r) << 1;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_RRC(uint8_t* r){
-	if((*r) & 0x1 == 0x1) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = (*r) >> 1;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_RR(uint8_t* r){
-	uint8_t old_c = registers.F & 0x10;
-	if((*r) & 0x1 == 0x1) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	//if((*r & 0x01) == 0x01) ? registers.F |= 0x10: registers.F &= 0b11101111; 
-	uint8_t result = ((*r) >> 1)|(old_c << 3);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_SLA(uint8_t* r){
-	uint8_t result = ((*r) << 1);
-	if((*r) & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_SRA(uint8_t* r){
-	uint8_t result = ((*r) >> 1) | ((*r) & 0x80);
-	/*
-	if((*r) & 0x01 == 0x01) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	*/
-	registers.F &= 0b10001111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
-
-void Z80::_SRL(uint8_t* r){
-	uint8_t result = ((*r) >> 1);
-	if((*r) & 0x01 == 0x01) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	*r = result;
-}
 
 
 void Z80::pi_0x0(uint16_t args){
@@ -1374,13 +1336,9 @@ void Z80::pi_0x5(uint16_t args){
 	_RLC(&registers.L);
 }
 void Z80::pi_0x6(uint16_t args){
-	if(mem.read(registers.HL) & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	uint8_t result = (mem.read(registers.HL)) << 1;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_RLC(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x7(uint16_t args){
 	_RLC(&registers.A);
@@ -1404,13 +1362,9 @@ void Z80::pi_0xd(uint16_t args){
 	_RRC(&registers.L);
 }
 void Z80::pi_0xe(uint16_t args){
-	if(mem.read(registers.HL) & 0x1 == 0x1) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = mem.read(registers.HL) >> 1;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_RRC(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0xf(uint16_t args){
 	_RRC(&registers.A);
@@ -1436,14 +1390,9 @@ void Z80::pi_0x15(uint16_t args){
 	_RL(&registers.L);
 }
 void Z80::pi_0x16(uint16_t args){
-	uint8_t old_c = registers.F & 0x10;
-	if(mem.read(registers.HL) & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = (mem.read(registers.HL) << 1)|(old_c >> 4);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_RL(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x17(uint16_t args){
 	_RL(&registers.A);
@@ -1469,14 +1418,9 @@ void Z80::pi_0x1d(uint16_t args){
 	_RR(&registers.L);
 }
 void Z80::pi_0x1e(uint16_t args){
-	uint8_t old_c = registers.F & 0x10;
-	if(mem.read(registers.HL) & 0x1 == 0x1) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b00011111;
-	uint8_t result = (mem.read(registers.HL) >> 1)|(old_c << 3);
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_RR(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x1f(uint16_t args){
 	_RR(&registers.A);
@@ -1501,13 +1445,9 @@ void Z80::pi_0x25(uint16_t args){
 	_SLA(&registers.L);
 }
 void Z80::pi_0x26(uint16_t args){
-	uint8_t result = (mem.read(registers.HL) << 1);
-	if(mem.read(registers.HL) & 0x80 == 0x80) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_SLA(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x27(uint16_t args){
 	_SLA(&registers.A);
@@ -1533,15 +1473,9 @@ void Z80::pi_0x2d(uint16_t args){
 	_SRA(&registers.L);
 }
 void Z80::pi_0x2e(uint16_t args){
-	uint8_t result = (mem.read(registers.HL) >> 1) | (mem.read(registers.HL) & 0x80);
-	/*
-	if((*r) & 0x01 == 0x01) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	*/
-	registers.F &= 0b10001111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_SRA(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x2f(uint16_t args){
 	_SRA(&registers.A);
@@ -1549,7 +1483,7 @@ void Z80::pi_0x2f(uint16_t args){
 
 
 /* SWAP */
-#define SWAP(r) r = ((r & 0xF) << 8) | ((r & 0xF0) >> 8);
+
 void Z80::pi_0x30(uint16_t args){
 	SWAP(registers.B);
 }
@@ -1594,31 +1528,12 @@ void Z80::pi_0x3d(uint16_t args){
 	_SRL(&registers.L);
 }
 void Z80::pi_0x3e(uint16_t args){
-	uint8_t result = (mem.read(registers.HL) >> 1);
-	if(mem.read(registers.HL) & 0x01 == 0x01) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	registers.F &= 0b10011111;
-	if(result == 0) registers.F |= 0x80;
-	else registers.F &= 0b01111111;
-	mem.write(registers.HL, result);
+	uint8_t temp = (uint8_t) mem.read(registers.HL);
+	_SRL(&temp);
+	mem.write(registers.HL, temp);
 }
 void Z80::pi_0x3f(uint16_t args){
 	_SRL(&registers.A);
-}
-
-void Z80::_BIT(uint8_t b, uint8_t r){
-	registers.F &= 0b10111111;
-	registers.F |= 0b00100000;
-	if((r & (1 << b)) == 0x0) registers.F |= 0b10000000;
-	else registers.F &= 0b01111111;
-}
-
-
-void Z80::_RES(uint8_t b, uint8_t* r){
-	(*r) &= (~(0x01 << b));
-}
-void Z80::_SET(uint8_t b, uint8_t* r){
-	(*r) |= (0x01 << b);
 }
 
 void Z80::pi_0x40(uint16_t args){

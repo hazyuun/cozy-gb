@@ -7,7 +7,22 @@
 #include <cstdint>
 #include <cstddef>
 #include <iostream>
+
 extern unsigned char* ROM;
+
+#define Z_FLAG_MASK	0x80 
+#define N_FLAG_MASK	0x40
+#define H_FLAG_MASK	0x20
+#define C_FLAG_MASK	0x10
+
+#define Z_FLAG_TEST	((registers.F & Z_FLAG_MASK) == Z_FLAG_MASK)
+#define N_FLAG_TEST	((registers.F & N_FLAG_MASK) == N_FLAG_MASK)
+#define H_FLAG_TEST	((registers.F & H_FLAG_MASK) == H_FLAG_MASK)
+#define C_FLAG_TEST	((registers.F & C_FLAG_MASK) == C_FLAG_MASK)
+
+#define SET_FLAG(x)	(registers.F |= x)	
+#define RESET_FLAG(x)	(registers.F &= ~x)
+
 class Z80{
     private:
     struct registers{
@@ -76,7 +91,7 @@ class Z80{
 	void _INC(uint8_t* n);
 	void _DEC(uint8_t* n);
 
-	void _ADD16(uint16_t* r, int16_t n);
+	void _ADD16(uint16_t* r, uint16_t n);
 
 	void _RL(uint8_t* r);
 	void _RLC(uint8_t* r);

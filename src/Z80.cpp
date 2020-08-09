@@ -8,7 +8,9 @@
 #include "mem.h"
 
 extern Mem mem;
+
 bool debug = false;
+
 Z80::Z80(){
     registers.AF = 0x01B0;
     registers.BC = 0x0013;
@@ -19,6 +21,7 @@ Z80::Z80(){
     cycles = 144;
     std::cout<<"[CPU] ready !"<<std::endl;
 }
+
 void Z80::cycle(){
     
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
@@ -52,7 +55,6 @@ void Z80::cycle(){
     	inst_hex = (opcode<<8)|mem.read(registers.PC+2);
     	inst_arg = ((inst_hex&0x00FF)<<8)|((inst_hex&0xFF00)>>8);
     	registers.PC += 3;
-        
         //fprintf(stdout, "\t");
         break;
     }
@@ -67,11 +69,10 @@ void Z80::cycle(){
         debug = true;
     	return;
     }
-    //uint8_t N = registers.F & 0b01000000;
+    
     (this->*inst.function)(inst_arg);
-    //if((registers.F & 0b01000000)!=N){
-    //    std::cout<<"\nN changed ! "<<inst._asm;
-    //}
+    
+
     /* WARNING ! messy stuff ahead ! but it is temporary */
     cycles += inst.cycles;
     if(cycles%450==0)
@@ -80,11 +81,13 @@ void Z80::cycle(){
         mem.write(0xFF44, 0x0);
 
     if(debug){
+#if 0
         std::cout<<"\n*** Memory ***\n";
         for(uint16_t a= 0xD800; a < 0xD810; a++){
             if((a & 0xF) == 0) printf("\n[ %4x ] ", a);
             printf(" %2x", mem.read(a));
         }
+#endif
         std::cout<<"\n*** Registers ***\n";
         fprintf(stdout, "A = %x \t F = %x\n", registers.A, registers.F);
         fprintf(stdout, "B = %x \t C = %x\n", registers.B, registers.C);
@@ -101,17 +104,19 @@ void Z80::cycle(){
     }
 
 #if 0
-    if(registers.PC < 0xC7F9 && registers.PC >= 0xC7F3 && registers.A == 0x90){//0xC24C) {
+    if(registers.PC == 0xCA01){
         debug = true;
         
     }
 #endif
+
+#if 1
     if (mem.read(0xff02) == (unsigned char)0x81) {
         unsigned char c = mem.read(0xff01);
         printf("%c", c);
         mem.write(0xff02, 0x0);
     }
-
+#endif
 }
 Z80::~Z80(){
 
