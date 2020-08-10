@@ -150,14 +150,11 @@ void Z80::_ADD16(uint16_t* r, int8_t n){
 }
 void Z80::_RL(uint8_t* r){
 	uint8_t old_c = registers.F & 0x10;
-	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
-	else RESET_FLAG(C_FLAG_MASK);
-	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
-	//if((*r & 0x01) == 0x01) ? registers.F |= 0x10: registers.F &= 0b11101111; 
-	uint8_t result = ((*r) << 1);
-	if(old_c) result |= 0x01;
-	else result &= 0xFE;
-	if(result == 0 ) SET_FLAG(Z_FLAG_MASK);
+	if(((*r) & 0x80) == 0x0) RESET_FLAG(C_FLAG_MASK);
+	else SET_FLAG(C_FLAG_MASK);
+	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK); 
+	uint8_t result = (uint8_t)(((*r) << 1)|(old_c ==0x10 ? (uint8_t)0x1 : (uint8_t)0x0));
+	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
 	*r = result;
 }
@@ -190,7 +187,7 @@ void Z80::_RRC(uint8_t* r){
 
 void Z80::_RR(uint8_t* r){
 	uint8_t old_c = registers.F & 0x10;
-	if((*r) & 0x1 == 0x1) SET_FLAG(C_FLAG_MASK);
+	if(((*r) & 0x1) == 0x1) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
 	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	//if((*r & 0x01) == 0x01) ? registers.F |= 0x10: registers.F &= 0b11101111; 
@@ -201,23 +198,19 @@ void Z80::_RR(uint8_t* r){
 }
 
 void Z80::_SLA(uint8_t* r){
-	uint8_t result = ((*r) << 1);
-	if((*r) & 0x80 == 0x80) SET_FLAG(C_FLAG_MASK);
+	if((*r & 0x80) == 0x80) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
-	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
-	if(result == 0) SET_FLAG(Z_FLAG_MASK);
+	*r <<= 1;
+	RESET_FLAG(N_FLAG_MASK);
+	RESET_FLAG(H_FLAG_MASK);
+	if(*r == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
-	*r = result;
 }
 
 void Z80::_SRA(uint8_t* r){
 	uint8_t result = ((*r) >> 1) | ((*r) & 0x80);
-	if((*r) & 0x01 == 0x01) SET_FLAG(C_FLAG_MASK);
+	if(((*r) & 0x01) == 0x01) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
-	/*
-	if((*r) & 0x01 == 0x01) registers.F |= 0x10;
-	else registers.F &= 0b11101111;
-	*/
 	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
 	else RESET_FLAG(Z_FLAG_MASK);
@@ -226,7 +219,7 @@ void Z80::_SRA(uint8_t* r){
 
 void Z80::_SRL(uint8_t* r){
 	uint8_t result = ((*r) >> 1);
-	if((*r) & 0x01 == 0x01) SET_FLAG(C_FLAG_MASK);
+	if(((*r) & 0x01) == 0x01) SET_FLAG(C_FLAG_MASK);
 	else RESET_FLAG(C_FLAG_MASK);
 	RESET_FLAG(N_FLAG_MASK | H_FLAG_MASK);
 	if(result == 0) SET_FLAG(Z_FLAG_MASK);
@@ -1421,7 +1414,7 @@ void Z80::pi_0x15(uint16_t args){
 void Z80::pi_0x16(uint16_t args){
 	uint8_t temp = (uint8_t) mem.read(registers.HL);
 	_RL(&temp);
-	mem.write(registers.HL, temp);
+	mem.write(registers.HL, (unsigned char)temp);
 }
 void Z80::pi_0x17(uint16_t args){
 	_RL(&registers.A);

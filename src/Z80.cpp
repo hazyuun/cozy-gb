@@ -23,7 +23,6 @@ Z80::Z80(){
 }
 
 void Z80::cycle(){
-    
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 
@@ -104,7 +103,7 @@ void Z80::cycle(){
     }
 
 #if 0
-    if(registers.PC == 0xCC5F){
+    if(registers.PC == 0xD03F){
         debug = true;
         
     }
@@ -112,7 +111,9 @@ void Z80::cycle(){
 
 #if 1
     if (mem.read(0xff02) == (unsigned char)0x81) {
+        
         unsigned char c = mem.read(0xff01);
+        //if(c == '\n') debug = true;
         printf("%c", c);
         mem.write(0xff02, 0x0);
     }
