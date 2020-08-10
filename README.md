@@ -4,7 +4,7 @@ A gameboy emulator !
 ## Blarggs tests
 - [x] 01-special.gb
 - [ ] 02-interrupts.gb
-- [ ] 03-op sp,hl.gb
+- [x] 03-op sp,hl.gb
 - [x] 04-op r,imm.gb
 - [x] 05-op rp.gb
 - [ ] 06-ld r,r.gb

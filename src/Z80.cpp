@@ -104,7 +104,7 @@ void Z80::cycle(){
     }
 
 #if 0
-    if(registers.PC == 0xCA01){
+    if(registers.PC == 0xCC5F){
         debug = true;
         
     }

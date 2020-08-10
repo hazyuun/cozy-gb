@@ -628,8 +628,8 @@ void Z80::i_0x31(uint16_t args){
 
 void Z80::i_0xf8(uint16_t args){
 	uint16_t result = registers.SP;
-	_ADD16(&result, (int8_t)(args & 0xFF));
-	mem.write(registers.HL, result);
+	_ADD16(&result, static_cast<int8_t>(args & 0xFF));
+	registers.HL = result;
 }
 
 void Z80::i_0xf9(uint16_t args){
