@@ -1256,7 +1256,7 @@ void Z80::i_0xcd(uint16_t args){
 }
 
 void Z80::i_0xcf(uint16_t args){
-	i_0xcd(0x80);
+	i_0xcd(0x08);
 }
 
 void Z80::i_0xd0(uint16_t args){
@@ -1275,7 +1275,7 @@ void Z80::i_0xd4(uint16_t args){
 }
 
 void Z80::i_0xd7(uint16_t args){
-	i_0xcd(0x01);
+	i_0xcd(0x10);
 }
 
 void Z80::i_0xd8(uint16_t args){
@@ -1299,11 +1299,11 @@ void Z80::i_0xdc(uint16_t args){
 }
 
 void Z80::i_0xdf(uint16_t args){
-	i_0xcd(0x81);
+	i_0xcd(0x18);
 }
 
 void Z80::i_0xe7(uint16_t args){
-	i_0xcd(0x02);
+	i_0xcd(0x20);
 }
 
 void Z80::i_0xe9(uint16_t args){
@@ -1311,15 +1311,15 @@ void Z80::i_0xe9(uint16_t args){
 }
 
 void Z80::i_0xef(uint16_t args){
-	i_0xcd(0x82);
+	i_0xcd(0x28);
 }
 
 void Z80::i_0xf7(uint16_t args){
-	i_0xcd(0x03);
+	i_0xcd(0x30);
 }
 
 void Z80::i_0xff(uint16_t args){
-	i_0xcd(0x83);
+	i_0xcd(0x38);
 }
 
 /* Unsupported opcodes */

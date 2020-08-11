@@ -22,11 +22,8 @@ int main(int argc, char** argv){
     mem.load((unsigned char*) buffer, size, 0x0000);
 
     std::cout<<"[ROM] loaded "<<size<<" bytes"<<std::endl;
-    int k = 0;
-//    while(k<length)
-//        std::cout<<"0x"<<std::hex<<(unsigned char*)buffer[k++]<<" ";
-    while(I_LIKE_RAIN){
-        
+    
+    while(I_LIKE_RAIN){    
         cpu.cycle();
     }
     return 0;

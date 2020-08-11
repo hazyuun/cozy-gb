@@ -21,8 +21,13 @@ Z80::Z80(){
     cycles = 144;
     std::cout<<"[CPU] ready !"<<std::endl;
 }
-
+short k = 0;
 void Z80::cycle(){
+    /*
+    fprintf(stdout, 
+     "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: 00:%04X\n", 
+     registers.A, registers.F, registers.B, registers.C, registers.D, registers.E, registers.H, registers.L, registers.SP, registers.PC);
+    */
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 
@@ -74,11 +79,11 @@ void Z80::cycle(){
 
     /* WARNING ! messy stuff ahead ! but it is temporary */
     cycles += inst.cycles;
-    if(cycles%450==0)
+    /*if(cycles%450==0)
         mem.write(0xFF44, mem.read(0xFF44)+1);
     if(mem.read(0xFF44)==153)
         mem.write(0xFF44, 0x0);
-
+    */
     if(debug){
 #if 0
         std::cout<<"\n*** Memory ***\n";
@@ -103,17 +108,16 @@ void Z80::cycle(){
     }
 
 #if 0
-    if(registers.PC == 0xD03F){
+    if((registers.PC == 0x02C4)){
         debug = true;
         
     }
 #endif
+    
 
 #if 1
-    if (mem.read(0xff02) == (unsigned char)0x81) {
-        
+    if (mem.read(0xff02) == (unsigned char)0x81) {        
         unsigned char c = mem.read(0xff01);
-        //if(c == '\n') debug = true;
         printf("%c", c);
         mem.write(0xff02, 0x0);
     }
