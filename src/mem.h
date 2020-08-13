@@ -5,6 +5,29 @@
 
 #pragma once
 #include <cstdint>
+
+#define ROM0_OFFSET    0x0000
+#define ROM1_OFFSET    0x4000
+#define VRAM_OFFSET    0x8000
+#define SRAM_OFFSET    0xA000
+#define WRAM_OFFSET    0xC000
+#define ECHO_OFFSET    0xE000
+#define OAM_OFFSET     0xFE00
+#define IO_OFFSET      0xFF00
+#define HRAM_OFFSET    0xFF80
+
+#define ROM0(address)   ((address >= ROM0_OFFSET) && (address < ROM1_OFFSET))
+#define ROM1(address)   ((address >= ROM1_OFFSET) && (address < VRAM_OFFSET))
+#define VRAM(address)   ((address >= VRAM_OFFSET) && (address < SRAM_OFFSET))
+#define SRAM(address)   ((address >= SRAM_OFFSET) && (address < WRAM_OFFSET))
+#define WRAM(address)   ((address >= WRAM_OFFSET) && (address < ECHO_OFFSET))
+#define ECHO(address)   ((address >= ECHO_OFFSET) && (address < OAM_OFFSET))
+#define OAM(address)    ((address >= OAM_OFFSET) && (address < IO_OFFSET))
+#define IO(address)     ((address >= IO_OFFSET) && (address < HRAM_OFFSET))
+#define HRAM(address)   ((address >= HRAM_OFFSET))
+
+
+
 class Mem{
     private:
     unsigned char memory[64*1024];

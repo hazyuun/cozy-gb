@@ -1143,6 +1143,7 @@ class Z80{
 	public:
 	Z80();
 	void cycle();
+	inline long get_cycle_count() const {return cycles;};
 	~Z80();
 };
 

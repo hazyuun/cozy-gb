@@ -1,5 +1,6 @@
 #include "Z80.h"
 #include "mem.h"
+#include "PPU.h"
 #include "LCD.h"
 #include <iostream>
 #include <fstream>
@@ -8,6 +9,7 @@
 
 Mem mem;
 Z80 cpu;
+PPU ppu;
 LCD lcd = LCD(2*160, 2*144, "LCD");
 unsigned char* ROM;
 int main(int argc, char** argv){
@@ -28,15 +30,10 @@ int main(int argc, char** argv){
     
      
     while(I_LIKE_RAIN && !lcd.should_close()){
-        //cpu.cycle();
-        short* fb = new short[160*144];
-        for(int k = 0; k < 160*144; k++){
-            fb[k] = 1;
-        }
-        
-         
+        cpu.cycle();
+        ppu.step();
         lcd.clear();
-        lcd.update(fb);
+        //lcd.update(fb);
     }    
     
     return 0;
