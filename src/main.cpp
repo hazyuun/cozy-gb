@@ -8,15 +8,10 @@
 
 Mem mem;
 Z80 cpu;
+LCD lcd = LCD(2*160, 2*144, "LCD");
 unsigned char* ROM;
 int main(int argc, char** argv){
-    LCD lcd = LCD(200, 200, "LCD");
-    while(lcd.should_close()){
-        lcd.clear();
-        lcd.update();
-    }
     
-    return 0;
     if(argc != 2){
     	std::cout<<"NO ROM !"<<std::endl;
     	return 1;
@@ -31,9 +26,19 @@ int main(int argc, char** argv){
 
     std::cout<<"[ROM] loaded "<<size<<" bytes"<<std::endl;
     
-    while(I_LIKE_RAIN){    
-        cpu.cycle();
-    }
+     
+    while(I_LIKE_RAIN && !lcd.should_close()){
+        //cpu.cycle();
+        short* fb = new short[160*144];
+        for(int k = 0; k < 160*144; k++){
+            fb[k] = 1;
+        }
+        
+         
+        lcd.clear();
+        lcd.update(fb);
+    }    
+    
     return 0;
 }
 
