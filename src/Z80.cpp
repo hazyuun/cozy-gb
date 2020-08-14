@@ -85,11 +85,11 @@ void Z80::cycle(){
         mem.write(0xFF44, 0x0);
     */
     if(debug){
-#if 0
+#if 1
         std::cout<<"\n*** Memory ***\n";
-        for(uint16_t a= 0xD800; a < 0xD810; a++){
-            if((a & 0xF) == 0) printf("\n[ %4x ] ", a);
-            printf(" %2x", mem.read(a));
+        for(uint16_t a= 0x8000; a < (0x8010); a++){
+            if((a & 0xF) == 0) printf("\n[ %0004X ] ", a);
+            printf(" %02X", mem.read(a));
         }
 #endif
         std::cout<<"\n*** Registers ***\n";
@@ -108,9 +108,13 @@ void Z80::cycle(){
     }
 
 #if 0
-    if((registers.PC == 0x02C4)){
-        debug = true;
-        
+    if((registers.PC == 0x282A)){
+        std::cout<<"\n*** Memory ***\n";
+        for(uint16_t a= 0x8000; a < 0x8010; a++){
+            if((a & 0xF) == 0) printf("\n[ %0004X ] ", a);
+            printf(" %02X", mem.read(a));
+        }
+        std::cin.get();
     }
 #endif
     

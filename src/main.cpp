@@ -28,12 +28,11 @@ int main(int argc, char** argv){
 
     std::cout<<"[ROM] loaded "<<size<<" bytes"<<std::endl;
     
-     
     while(I_LIKE_RAIN && !lcd.should_close()){
         cpu.cycle();
         ppu.step();
         lcd.clear();
-        //lcd.update(fb);
+        lcd.update();
     }    
     
     return 0;

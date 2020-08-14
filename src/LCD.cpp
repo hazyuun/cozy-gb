@@ -7,11 +7,11 @@
 LCD::LCD(short w, short h, const char* title)
       :width(w), height(h), title(title)
 {
-      palette[0] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-      palette[1] = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
-      palette[2] = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
-      palette[3] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-      
+      palette[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+      palette[2] = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
+      palette[1] = glm::vec4(0.75f, 0.75f, 0.75f, 1.0f);
+      palette[0] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+      framebuffer = new short[144 * 160];
       setup();
       /* TODO: error handling */
 }
@@ -34,14 +34,14 @@ void LCD::clear(){
       glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void LCD::update(short* framebuffer){
+void LCD::update(){
       GLuint screen;
       GLubyte pixels[144 * 160 * 3];
       for(int k = 0; k < 144 * 160 * 3;){
             pixels[  k  ] = palette[framebuffer[k/3]].r * 255;
-            pixels[k + 1] = palette[framebuffer[k/3]].g * 255;
-            pixels[k + 2] = palette[framebuffer[k/3]].b * 255;
-            k += 3;
+            pixels[++k] = palette[framebuffer[k/3]].g * 255;
+            pixels[++k] = palette[framebuffer[k/3]].b * 255;
+            ++k;
       }
       glGenTextures(1, &screen);
       glBindTexture(GL_TEXTURE_2D, screen);
@@ -50,7 +50,7 @@ void LCD::update(short* framebuffer){
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 144, 160, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);         
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 160, 144, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);         
       glEnable(GL_TEXTURE_2D);
 
       glBegin(GL_QUADS);
