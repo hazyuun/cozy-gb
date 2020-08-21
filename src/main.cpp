@@ -27,12 +27,11 @@ int main(int argc, char** argv){
     mem.load((unsigned char*) buffer, size, 0x0000);
 
     std::cout<<"[ROM] loaded "<<size<<" bytes"<<std::endl;
-    
+    delete[] buffer;
     while(I_LIKE_RAIN && !lcd.should_close()){
         cpu.cycle();
         ppu.step();
-        lcd.clear();
-        lcd.update();
+        
     }    
     
     return 0;

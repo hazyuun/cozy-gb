@@ -1284,8 +1284,8 @@ void Z80::i_0xd8(uint16_t args){
 }
 
 void Z80::i_0xd9(uint16_t args){
-	i_0xc9(args);
 	IME = true;
+	i_0xc9(args);
 }
 
 void Z80::i_0xda(uint16_t args){

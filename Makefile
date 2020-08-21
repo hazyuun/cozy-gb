@@ -2,4 +2,4 @@ CXX = g++
 LDFLAGS = -lglfw -lGL -lGLEW
 
 all:
-	$(CXX) -Wno-write-strings -g src/*.cpp -o bin/niou $(LDFLAGS) 
+	$(CXX) -Wno-write-strings -g -O2 src/*.cpp -o bin/niou $(LDFLAGS) 

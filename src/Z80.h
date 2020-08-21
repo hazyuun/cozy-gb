@@ -69,7 +69,7 @@ class Z80{
 	} registers;
 	bool HALT = false;
 	bool STOP = false;
-	bool IME = false;
+	
 	long cycles = 0;
 	typedef struct {
 		uint8_t opcode;
@@ -1141,6 +1141,7 @@ class Z80{
 	};
 
 	public:
+	bool IME = true;
 	Z80();
 	void cycle();
 	inline long get_cycle_count() const {return cycles;};

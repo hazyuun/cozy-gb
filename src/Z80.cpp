@@ -5,10 +5,11 @@
 #include <iostream>
 #include <iomanip>
 #include "Z80.h"
+#include "LCD.h"
 #include "mem.h"
 
 extern Mem mem;
-
+extern LCD lcd;
 bool debug = false;
 
 Z80::Z80(){
@@ -21,13 +22,21 @@ Z80::Z80(){
     cycles = 144;
     std::cout<<"[CPU] ready !"<<std::endl;
 }
-short k = 0;
+
 void Z80::cycle(){
-    /*
-    fprintf(stdout, 
-     "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: 00:%04X\n", 
-     registers.A, registers.F, registers.B, registers.C, registers.D, registers.E, registers.H, registers.L, registers.SP, registers.PC);
-    */
+    
+    if(IME && mem.read(0xFFFF)&& mem.read(0xFF0F)){
+        HALT = false;
+        if(mem.read(0xFF0F) & 0x1){
+            IME = false;
+            mem.write(0xFF0F, mem.read(0xFF0F) & 0xFE);
+            i_0xcd(0x40);
+        }
+    }
+    if(HALT){
+        
+        return;
+    }
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 
@@ -79,19 +88,15 @@ void Z80::cycle(){
 
     /* WARNING ! messy stuff ahead ! but it is temporary */
     cycles += inst.cycles;
-    /*if(cycles%450==0)
-        mem.write(0xFF44, mem.read(0xFF44)+1);
-    if(mem.read(0xFF44)==153)
-        mem.write(0xFF44, 0x0);
-    */
+    
     if(debug){
-#if 1
+
         std::cout<<"\n*** Memory ***\n";
         for(uint16_t a= 0x8000; a < (0x8010); a++){
             if((a & 0xF) == 0) printf("\n[ %0004X ] ", a);
             printf(" %02X", mem.read(a));
         }
-#endif
+
         std::cout<<"\n*** Registers ***\n";
         fprintf(stdout, "A = %x \t F = %x\n", registers.A, registers.F);
         fprintf(stdout, "B = %x \t C = %x\n", registers.B, registers.C);
@@ -106,19 +111,7 @@ void Z80::cycle(){
         
         std::cin.get();
     }
-
-#if 0
-    if((registers.PC == 0x282A)){
-        std::cout<<"\n*** Memory ***\n";
-        for(uint16_t a= 0x8000; a < 0x8010; a++){
-            if((a & 0xF) == 0) printf("\n[ %0004X ] ", a);
-            printf(" %02X", mem.read(a));
-        }
-        std::cin.get();
-    }
-#endif
     
-
 #if 1
     if (mem.read(0xff02) == (unsigned char)0x81) {        
         unsigned char c = mem.read(0xff01);
