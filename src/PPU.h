@@ -37,16 +37,43 @@ class PPU{
           PPU_VRAM
      };
      
+     struct OAM_entry {
+          uint8_t y;
+          uint8_t x;
+          uint8_t tile;
+          uint8_t flags;               
+     } ;
+
+     uint8_t OBP0;
+     uint8_t OBP1;
+     
+
      long clock;
      uint8_t line = 0;
+     uint8_t LYC = 144;
 
-     enum PPU_MODE mode;
-     
+     struct {
+          bool coincid_enable;
+          bool OAM_enable;
+          bool VBlank_enable;
+          bool HBlank_enable;
+          bool coincid_flag;
+          enum PPU_MODE mode;
+     } STAT;
+
      short framebuffer[256 * 256];
 
 public:
      PPU();
+     
      void step();
+     void render_bg();
+     void render_sp();
+     void render_wn();
+     
+     void update_STAT(uint8_t);
+     uint8_t read_STAT();
+
      ~PPU();
      friend class Mem;
 };

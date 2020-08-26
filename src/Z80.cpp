@@ -25,18 +25,41 @@ Z80::Z80(){
 
 void Z80::cycle(){
     
-    if(IME && mem.read(0xFFFF)&& mem.read(0xFF0F)){
-        HALT = false;
-        if(mem.read(0xFF0F) & 0x1){
+    if(IME && mem.read(INT_ENABLE) && mem.read(INT_FLAGS)){
+              
+        if(INT_TEST(INT_VBLANK)){
             IME = false;
-            mem.write(0xFF0F, mem.read(0xFF0F) & 0xFE);
-            i_0xcd(0x40);
+            INT_ACK(INT_VBLANK);
+            i_0xcd(INT_VBLANK_ISR);
         }
+
+        if(INT_TEST(INT_STAT)){
+            IME = false;
+            INT_ACK(INT_STAT);
+            i_0xcd(INT_STAT_ISR);
+        }
+
+        if(INT_TEST(INT_TIMER)){
+            IME = false;
+            INT_ACK(INT_TIMER);
+            i_0xcd(INT_TIMER_ISR);
+        }
+
+        if(INT_TEST(INT_SERIAL)){
+            IME = false;
+            INT_ACK(INT_SERIAL);
+            i_0xcd(INT_SERIAL_ISR);
+        }
+
+        if(INT_TEST(INT_JOYPAD)){
+            IME = false;
+            INT_ACK(INT_JOYPAD);
+            i_0xcd(INT_JOYPAD_ISR);
+        }
+        HALT = false;
     }
-    if(HALT){
-        
-        return;
-    }
+    if(HALT) return;
+    
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 

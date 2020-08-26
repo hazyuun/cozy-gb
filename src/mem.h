@@ -26,16 +26,38 @@
 #define IO(address)     ((address >= IO_OFFSET) && (address < HRAM_OFFSET))
 #define HRAM(address)   ((address >= HRAM_OFFSET))
 
+#define INT_VBLANK_ISR	0x40
+#define INT_STAT_ISR	0x48
+#define INT_TIMER_ISR	0x50
+#define INT_SERIAL_ISR	0x58
+#define INT_JOYPAD_ISR	0x60
+
+#define INT_ENABLE		0xFFFF
+#define INT_FLAGS		0xFF0F
+
+#define INT_VBLANK	(1 << 0)
+#define INT_STAT	(1 << 1)
+#define INT_TIMER	(1 << 2)
+#define INT_SERIAL	(1 << 3)
+#define INT_JOYPAD	(1 << 4)
+
+
+#define INT_RAISE(i)    mem.write(INT_FLAGS, mem.read(INT_FLAGS) | i)
+#define INT_ACK(i)      mem.write(INT_FLAGS, mem.read(INT_FLAGS) & (~i))
+#define INT_TEST(i)     (mem.read(INT_FLAGS) & i)
 
 
 class Mem{
     private:
     unsigned char memory[64*1024];
+    uint8_t DMA;
     public:
     Mem();
     void load(unsigned char* data, uint64_t size, uint16_t addr);
     unsigned char read(uint16_t addr); 
     void write(uint16_t addr, unsigned char value);
+
+    void OAM_DMA(uint8_t);
 
     void log(uint16_t addr);
     ~Mem();

@@ -12,6 +12,8 @@ Z80 cpu;
 PPU ppu;
 LCD lcd = LCD(2*160, 2*144, "LCD");
 unsigned char* ROM;
+
+
 int main(int argc, char** argv){
     
     if(argc != 2){
@@ -28,7 +30,9 @@ int main(int argc, char** argv){
 
     std::cout<<"[ROM] loaded "<<size<<" bytes"<<std::endl;
     delete[] buffer;
+    long long k = 0;
     while(I_LIKE_RAIN && !lcd.should_close()){
+        if(k++ % 1500 != 0) continue;
         cpu.cycle();
         ppu.step();
         

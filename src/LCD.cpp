@@ -4,6 +4,7 @@
  * */
 
 #include "LCD.h"
+#include <iostream>
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -50,6 +51,7 @@ void LCD::clear(){
 }
 
 void LCD::update(){
+      
       GLuint screen;
       GLubyte pixels[144 * 160 * 3] = {0};
       for(long k = 0; k < 144 * 160 * 3;){
@@ -84,11 +86,31 @@ bool LCD::should_close(){
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+      
       LCD* win = (LCD*) glfwGetWindowUserPointer(window);
+      uint8_t temp = 0x0;
+      
+      if(key == GLFW_KEY_RIGHT) temp |= (0x01 << 0);
+      if(key == GLFW_KEY_LEFT)  temp |= (0x01 << 1);
+      if(key == GLFW_KEY_UP)    temp |= (0x01 << 2);
+      if(key == GLFW_KEY_DOWN)  temp |= (0x01 << 3);
+      
+      if(key == GLFW_KEY_X)     temp |= (0x10 << 0);
+      if(key == GLFW_KEY_C)     temp |= (0x10 << 1);
+      if(key == GLFW_KEY_SPACE) temp |= (0x10 << 2);
+      if(key == GLFW_KEY_ENTER) temp |= (0x10 << 3);
+      
+      
+      
       switch(action){
-      case GLFW_PRESS: break;
-      case GLFW_RELEASE: break;
+      case GLFW_PRESS: win->keys |= temp; 
+      if((mem.read(INT_ENABLE) & INT_JOYPAD))
+            INT_RAISE(INT_JOYPAD);
+      break;
+      
+      case GLFW_RELEASE: win->keys &= ~temp; break;
       };
+      
 }
 
 LCD::~LCD(){

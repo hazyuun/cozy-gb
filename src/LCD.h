@@ -8,6 +8,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "mem.h"
+
+extern Mem mem;
+
 class LCD{
 public:
       GLFWwindow* handle;
@@ -16,6 +20,7 @@ public:
       const char* title;
       glm::vec4 palette[4];
       int setup();
+      uint8_t keys;
 public:
       short* framebuffer;
       
