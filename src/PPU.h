@@ -5,7 +5,7 @@
 #pragma once
 #include "mem.h"
 #include "Z80.h"
-#include "LCD.h"
+#include "HMI.h"
 
 
 extern Mem mem;
@@ -36,17 +36,17 @@ class PPU{
           PPU_OAM,
           PPU_VRAM
      };
-     
+
      struct OAM_entry {
           uint8_t y;
           uint8_t x;
           uint8_t tile;
-          uint8_t flags;               
+          uint8_t flags;
      } ;
 
      uint8_t OBP0;
      uint8_t OBP1;
-     
+
 
      long clock;
      uint8_t line = 0;
@@ -65,12 +65,12 @@ class PPU{
 
 public:
      PPU();
-     
+
      void step();
      void render_bg();
      void render_sp();
      void render_wn();
-     
+
      void update_STAT(uint8_t);
      uint8_t read_STAT();
 

@@ -6,14 +6,14 @@
 #include "mem.h"
 #include "PPU.h"
 #include <iostream>
-
+#include <time.h>
 extern PPU ppu;
 
 Mem::Mem(){
     write(0xFF00, 0xCF);
-    write(0xFF05, 0x00); 
-    write(0xFF06, 0x00); 
-    write(0xFF07, 0x00); 
+    write(0xFF05, 0x00);
+    write(0xFF06, 0x00);
+    write(0xFF07, 0x00);
     write(0xFF10, 0x80);
     write(0xFF11, 0xBF);
     write(0xFF12, 0xF3);
@@ -47,51 +47,58 @@ Mem::Mem(){
     std::cout<<"[MEM] ready !"<<std::endl;
 }
 void Mem::load(unsigned char* data, uint64_t size, uint16_t addr){
-    for(uint16_t pos = addr; pos < size; pos++){
+    for(uint16_t pos = addr; pos < addr + size; pos++){
         *(memory + pos) = *(data + pos - addr);
     }
 }
 
 unsigned char Mem::read(uint16_t addr){
-    if(addr == 0xFF40) return ppu.state.control;
-    if(addr == 0xFF41) return ppu.read_STAT();
-    if(addr == 0xFF42) return ppu.state.scroll_y;
-    if(addr == 0xFF43) return ppu.state.scroll_x;
-    if(addr == 0xFF44) return ppu.line;
-    if(addr == 0xFF45) return ppu.LYC;
-    if(addr == 0xFF46) return DMA;
-    if(addr == 0xFF47) return 0xFF;
-    if(addr == 0xFF48) return 0xFF;
-    if(addr == 0xFF49) return 0xFF;
-    if(addr == 0xFF00) {
-        uint8_t r = memory[addr];
-        r &= 0xF0;
-        switch((r & 0x30)){
-        case 0x20:    
-            r |= ((~lcd.keys) & 0xF); break;
-        case 0x10:    
-            r |= ((~lcd.keys) >> 4);break;
-        }
-        return r;
-    }    
-    
-    return memory[addr];
-} 
+	if(addr>=0xFEA0 && addr<=0xFEFF)return 0xFF;
+	if(addr == 0xFF04) return (uint8_t)rand();
+	if(addr == 0xFF40) return ppu.state.control;
+	if(addr == 0xFF41) return ppu.read_STAT();
+	if(addr == 0xFF42) return ppu.state.scroll_y;
+	if(addr == 0xFF43) return ppu.state.scroll_x;
+	if(addr == 0xFF44) return ppu.line;
+	if(addr == 0xFF45) return ppu.LYC;
+	if(addr == 0xFF46) return DMA;
+	if(addr == 0xFF47) return 0xFF;
+	if(addr == 0xFF48) return 0xFF;
+	if(addr == 0xFF49) return 0xFF;
+	if(addr == 0xFF00) {
+	   uint8_t r = memory[addr];
+	   r &= 0xF0;
+	   switch((r & 0x30)){
+	   case 0x20:
+	       r |= ((~lcd.keys) & 0xF); break;
+	   case 0x10:
+	       r |= ((~lcd.keys) >> 4);break;
+	   }
+	   return r;
+	}
+
+	return memory[addr];
+}
 void Mem::write(uint16_t addr, unsigned char value){
-    if(addr == 0xFF40) ppu.state.control = value;
-    else if(addr == 0xFF41) ppu.update_STAT(value);
-    else if(addr == 0xFF42) ppu.state.scroll_y = value;
-    else if(addr == 0xFF43) ppu.state.scroll_x = value;
-    else if(addr == 0xFF44) ppu.line *= 0;
-    else if(addr == 0xFF45) ppu.LYC = value;
-    else if(addr == 0xFF46) OAM_DMA(value);
-    else if(addr == 0xFF47) ppu.state.palette = value;
-    else if(addr == 0xFF48) ppu.OBP0 = value;
-    else if(addr == 0xFF49) ppu.OBP1 = value;
-    else if(addr == 0xFF00) memory[addr] = (value & 0x30);   
-    //else if(addr == 0xFF80) return;
-    //else if(addr == 0xFF00) return;    
-    else memory[addr] = value;
+	if(ROM0(addr) || ROM1(addr)) return;
+	if(addr == 0xFF04) return;
+	if(addr>=0xFEA0 && addr<=0xFEFF)return;
+	if(addr == 0xFF40) ppu.state.control = value;
+	else if(addr == 0xFF41) ppu.update_STAT(value);
+	else if(addr == 0xFF42) ppu.state.scroll_y = value;
+	else if(addr == 0xFF43) ppu.state.scroll_x = value;
+	else if(addr == 0xFF44) ppu.line *= 0;
+	else if(addr == 0xFF45) ppu.LYC = value;
+	else if(addr == 0xFF46) OAM_DMA(value);
+	else if(addr == 0xFF47) ppu.state.palette = value;
+	else if(addr == 0xFF48) ppu.OBP0 = value;
+	else if(addr == 0xFF49) ppu.OBP1 = value;
+	else if(addr == 0xFF00) memory[addr] = (value & 0x30);
+	else if(addr == 0xFF04) return;
+
+	//else if(addr == 0xFF80) return;
+	//else if(addr == 0xFF00) return;
+	else memory[addr] = value;
 }
 
 void Mem::OAM_DMA(uint8_t value){
@@ -102,7 +109,7 @@ void Mem::OAM_DMA(uint8_t value){
 
 
 void Mem::log(uint16_t addr){
-    
+
 }
 
 Mem::~Mem(){

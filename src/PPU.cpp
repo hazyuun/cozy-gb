@@ -9,12 +9,9 @@ PPU::PPU(){
 
 void PPU::step(){
      clock += cpu.get_cycle_count();
-     STAT.coincid_flag = (line == LYC);
-     if((mem.read(INT_ENABLE) & INT_STAT) && STAT.coincid_enable && STAT.coincid_flag) {
-          //INT_RAISE(INT_STAT);
-     }
+
      switch(STAT.mode){
-     case PPU_HBLANK: 
+     case PPU_HBLANK:
           if(clock >= 204){
                clock = 0;
                if(++line == 143){
@@ -25,59 +22,60 @@ void PPU::step(){
                          INT_RAISE(INT_VBLANK);
                     if((mem.read(INT_ENABLE) & INT_STAT) && STAT.VBlank_enable)
                          INT_RAISE(INT_STAT);
-                         
+
                     lcd.clear();
                     lcd.update();
-                    
-               
+
+
                }else STAT.mode = PPU_OAM;
           }
           break;
-     case PPU_VBLANK: 
-     
+     case PPU_VBLANK:
+		STAT.coincid_flag = (line == LYC);
+		if((mem.read(INT_ENABLE) & INT_STAT) && STAT.coincid_enable && STAT.coincid_flag) {
+			INT_RAISE(INT_STAT);
+		}
           if(clock >= 456){
                clock = 0;
                if(++line > 153){
                     STAT.mode = PPU_OAM;
                     if((mem.read(INT_ENABLE) & INT_STAT) && STAT.OAM_enable)
                          INT_RAISE(INT_STAT);
-                    
-                    
                     line = 0;
                }
           }
           break;
-     case PPU_OAM: 
+     case PPU_OAM:
           if(clock >= 80){
                clock = 0;
                STAT.mode = PPU_VRAM;
           }
           break;
-     case PPU_VRAM: 
+     case PPU_VRAM:
           if(clock >= 172){
                clock = 0;
                STAT.mode  = PPU_HBLANK;
                if((mem.read(INT_ENABLE) & INT_STAT) && STAT.HBlank_enable)
                     INT_RAISE(INT_STAT);
-                    
+
                if(PPU_CTRL_BG_ENABLE) render_bg();
                if(PPU_CTRL_SP_ENABLE) render_sp();
           }
           break;
      }
-     
+
 }
 void PPU::render_bg(){
      int map_offset      = ((PPU_CTRL_BG_TILEMAP) ? 0x9C00 : 0x9800)
                          + (((line + state.scroll_y) & 0xF8) << 2);
-     
+
      int line_offset     = state.scroll_x >> 3;
 
      int tile            = mem.read(map_offset + line_offset);
-     
+
      int x               = state.scroll_x & 0x07;
      int y               = (line + state.scroll_y) & 0x07;
-     
+
      int canvas_offset   = line * 160 + state.scroll_x;
      short color;
 
@@ -86,14 +84,14 @@ void PPU::render_bg(){
 
           if(PPU_CTRL_BG_TILESET) addr += 16 * ((uint8_t)tile);
           else addr += 16 * ((int8_t)tile);
-          
+
           addr += 2*y;
-          
+
           uint8_t B1 = mem.read(addr);
           uint8_t B2 = mem.read(addr + 1);
           uint8_t b1 = ((B1 & (1 << (7 - x))) >> (7 - x));
           uint8_t b2 = ((B2 & (1 << (7 - x))) >> (7 - x));
-          color      = (b1 << 1) | b2;
+          color      = (b2 << 1) | b1;
           color = (state.palette & (3 << (2*color))) >> (2*color);
           lcd.framebuffer[canvas_offset++] = color;
 
@@ -114,7 +112,7 @@ void PPU::render_sp(){
           };
           obj.y -= 16;
           obj.x -= 8;
-          
+
           uint8_t height = PPU_CTRL_SP_SIZE ? 16 : 8;
           if((line < (obj.y + height)) && (line >= obj.y)){
                int row = line - obj.y;
@@ -124,12 +122,12 @@ void PPU::render_sp(){
 
 
                uint16_t addr = VRAM_OFFSET + 16*obj.tile + row;
-               
+
                uint8_t B1 = mem.read(addr) ;
                uint8_t B2 = mem.read(addr + 1) ;
-               
+
                short canvas_offset = (line * 160 + obj.x);
-               
+
                for (int pixel = 0; pixel < 8; pixel++){
                     if(  ((obj.x + pixel) >= 0)
                     &&   ((obj.x + pixel) < 160)
@@ -138,8 +136,8 @@ void PPU::render_sp(){
                          int temp = (obj.flags & (1 << 5))?(7-pixel):pixel;
                          uint8_t b1     = ((B1 & (1 << (7 - temp))) >> (7 - temp));
                          uint8_t b2     = ((B2 & (1 << (7 - temp))) >> (7 - temp));
-                         short color    = (b1 << 1) | b2;
-                         
+                         short color    = (b2 << 1) | b1;
+
                          if(color){
                               uint8_t pa = (obj.flags & (1 << 4)) ? OBP1 : OBP0;
                               color = (pa & (3 << (2*color))) >> (2*color);
@@ -147,11 +145,11 @@ void PPU::render_sp(){
                          }
                          ++canvas_offset;
                     }
-               
+
                }
 
           }
-		
+
      }
 }
 void PPU::render_wn(){
@@ -172,7 +170,7 @@ uint8_t PPU::read_STAT(){
      result |= (uint8_t)STAT.VBlank_enable << 4;
      result |= (uint8_t)STAT.OAM_enable << 5;
      result |= (uint8_t)STAT.coincid_enable << 6;
-     return result;  
+     return result;
 }
 PPU::~PPU(){
 

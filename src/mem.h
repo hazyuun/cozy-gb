@@ -44,7 +44,7 @@
 
 #define INT_RAISE(i)    mem.write(INT_FLAGS, mem.read(INT_FLAGS) | i)
 #define INT_ACK(i)      mem.write(INT_FLAGS, mem.read(INT_FLAGS) & (~i))
-#define INT_TEST(i)     (mem.read(INT_FLAGS) & i)
+#define INT_TEST(i)     ((mem.read(INT_ENABLE) & i)&&(mem.read(INT_FLAGS) & i))
 
 
 class Mem{
@@ -54,7 +54,7 @@ class Mem{
     public:
     Mem();
     void load(unsigned char* data, uint64_t size, uint16_t addr);
-    unsigned char read(uint16_t addr); 
+    unsigned char read(uint16_t addr);
     void write(uint16_t addr, unsigned char value);
 
     void OAM_DMA(uint8_t);
@@ -62,4 +62,3 @@ class Mem{
     void log(uint16_t addr);
     ~Mem();
 };
-

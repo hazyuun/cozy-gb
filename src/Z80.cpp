@@ -5,12 +5,12 @@
 #include <iostream>
 #include <iomanip>
 #include "Z80.h"
-#include "LCD.h"
+#include "HMI.h"
 #include "mem.h"
 
 extern Mem mem;
 extern LCD lcd;
-bool debug = false;
+extern bool debug;
 
 Z80::Z80(){
     registers.AF = 0x01B0;
@@ -24,48 +24,57 @@ Z80::Z80(){
 }
 
 void Z80::cycle(){
-    
+
     if(IME && mem.read(INT_ENABLE) && mem.read(INT_FLAGS)){
-              
+
         if(INT_TEST(INT_VBLANK)){
             IME = false;
             INT_ACK(INT_VBLANK);
             i_0xcd(INT_VBLANK_ISR);
+		  cycles += 8;
+
         }
 
         if(INT_TEST(INT_STAT)){
             IME = false;
             INT_ACK(INT_STAT);
             i_0xcd(INT_STAT_ISR);
+		  cycles += 8;
+
         }
 
         if(INT_TEST(INT_TIMER)){
             IME = false;
             INT_ACK(INT_TIMER);
             i_0xcd(INT_TIMER_ISR);
+		  cycles += 8;
+
         }
 
         if(INT_TEST(INT_SERIAL)){
             IME = false;
             INT_ACK(INT_SERIAL);
             i_0xcd(INT_SERIAL_ISR);
+		  cycles += 8;
+
         }
 
         if(INT_TEST(INT_JOYPAD)){
             IME = false;
             INT_ACK(INT_JOYPAD);
             i_0xcd(INT_JOYPAD_ISR);
+		  cycles += 8;
+
         }
         HALT = false;
     }
     if(HALT) return;
-    
+
     if(debug) std::cout<<std::setw(8)<<"\n0x"<<std::hex<<registers.PC<<"\t";
     uint16_t opcode = mem.read(registers.PC) << 8 | mem.read(registers.PC+1);
 
     Z80::inst_t inst;
-    
-    
+
     if(((opcode & 0xFF00)>>8) != 0xCB)
         inst = insts[(opcode & 0xFF00)>>8];
     else{
@@ -105,13 +114,13 @@ void Z80::cycle(){
         debug = true;
     	return;
     }
-    
+
     (this->*inst.function)(inst_arg);
-    
+
 
     /* WARNING ! messy stuff ahead ! but it is temporary */
     cycles += inst.cycles;
-    
+
     if(debug){
 
         std::cout<<"\n*** Memory ***\n";
@@ -131,12 +140,12 @@ void Z80::cycle(){
                                                     ((registers.F & 0x40) == 0x40)?1:0,
                                                     ((registers.F & 0x20) == 0x20)?1:0,
                                                     ((registers.F & 0x10) == 0x10)?1:0);
-        
-        std::cin.get();
+
+        //std::cin.get();
     }
-    
+
 #if 1
-    if (mem.read(0xff02) == (unsigned char)0x81) {        
+    if (mem.read(0xff02) == (unsigned char)0x81) {
         unsigned char c = mem.read(0xff01);
         printf("%c", c);
         mem.write(0xff02, 0x0);
