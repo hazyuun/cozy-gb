@@ -1323,17 +1323,17 @@ void Z80::i_0xff(uint16_t args){
 }
 
 /* Unsupported opcodes */
-void Z80::i_0xd3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xdb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xdd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xe3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xe4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xeb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xec(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xed(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xf4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xfc(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
-void Z80::i_0xfd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE\n";}
+void Z80::i_0xd3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xd3 at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xdb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xdb at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xdd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xdd at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xe3(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xe3 at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xe4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xe4 at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xeb(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xeb at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xec(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xec at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xed(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xed at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xf4(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xf4 at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xfc(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xfc at 0x"<<registers.PC<<"\n";}
+void Z80::i_0xfd(uint16_t args){std::cout<<"\nUNSUPPORTED OPCODE : 0xfd at 0x"<<registers.PC<<"\n";}
 
 
 /* Prefixed instructions */

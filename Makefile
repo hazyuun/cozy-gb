@@ -1,7 +1,7 @@
 CXX = g++
 LDFLAGS = -lglfw -lGL -lGLEW
 INCLUDE = -Isrc -I. -Iimgui
-CCFLAGS = -Wno-write-strings -g -O2 
+CCFLAGS = -Wno-write-strings -g -O2
 
 SRC = $(shell find ./src -name "*.cpp")
 OBJ = $(patsubst ./src/%.cpp, ./obj/%.o, $(SRC))

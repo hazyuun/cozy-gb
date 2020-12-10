@@ -102,6 +102,7 @@ void Z80::cycle(){
     	registers.PC += 3;
         //fprintf(stdout, "\t");
         break;
+
     }
 
     if(debug){

@@ -5,6 +5,7 @@
 
 #pragma once
 #include <cstdint>
+#include "ROM.h"
 
 #define ROM0_OFFSET    0x0000
 #define ROM1_OFFSET    0x4000
@@ -46,14 +47,16 @@
 #define INT_ACK(i)      mem.write(INT_FLAGS, mem.read(INT_FLAGS) & (~i))
 #define INT_TEST(i)     ((mem.read(INT_ENABLE) & i)&&(mem.read(INT_FLAGS) & i))
 
-
 class Mem{
     private:
     unsigned char memory[64*1024];
     uint8_t DMA;
+    uint8_t cart_type;
     public:
     Mem();
     void load(unsigned char* data, uint64_t size, uint16_t addr);
+    void setCartType(uint8_t type);
+    
     unsigned char read(uint16_t addr);
     void write(uint16_t addr, unsigned char value);
 
