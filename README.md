@@ -1,5 +1,5 @@
 # Cozy Gameboy Emulator
-![Tetris](logo.png)
+![logo](logo.png)
 
 >This project is just for fun, you you are looking for a GB emulator just to play games, this might not be what you are looking for, because there are many better GB emulators that are well tested and supporting all types of cartridges.
 
