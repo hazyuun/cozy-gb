@@ -3,6 +3,8 @@
 
 >This project is just for fun, you you are looking for a GB emulator just to play games, this might not be what you are looking for, because there are many better GB emulators that are well tested and supporting all types of cartridges.
 
+* Note : These GIF screenshots seem a little bit laggy but the emulator isn't <br />
+
 |![Link's Awakening](screenshots/TLoZ.gif)|![Super Mario Land](screenshots/SML.gif)|
 |---|---|
 |![Tetris](screenshots/TETRIS.gif)|![Blargg](screenshots/blargg.gif)|
