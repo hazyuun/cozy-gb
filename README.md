@@ -1,15 +1,40 @@
-# gb-niou
-A gameboy emulator !
+# Cozy Gameboy Emulator
+![Tetris](logo.png)
 
-## Blarggs tests
-- [x] 01-special.gb
-- [ ] 02-interrupts.gb
-- [x] 03-op sp,hl.gb
-- [x] 04-op r,imm.gb
-- [x] 05-op rp.gb
-- [x] 06-ld r,r.gb
-- [x] 07-jr,jp,call,ret,rst.gb
-- [x] 08-misc instrs.gb
-- [x] 09-op r,r.gb
-- [x] 10-bit ops.gb
-- [x] 11-op a,(hl).gb
+>This project is just for fun, you you are looking for a GB emulator just to play games, this might not be what you are looking for, because there are many better GB emulators that are well tested and supporting all types of cartridges.
+
+|![Link's Awakening](screenshots/TLoZ.gif)|![Super Mario Land](screenshots/SML.gif)|
+|---|---|
+|![Tetris](screenshots/TETRIS.gif)|![Blargg](screenshots/blargg.gif)|
+
+## Getting started
+### Dependencies
+In order to compile, you will need :
+* `glfw`
+* `glew`
+* `glm`
+### Compiling
+Make directories :
+```bash
+$ mkdir obj bin
+```
+and run the Makefile using :
+```bash
+$ make
+```
+### Playing
+```bash
+$ ./bin/cozy-gb path/to/the/rom
+```
+
+
+## TODO
+- [ ] APU
+- [ ] Timer
+- [x] MBC1
+- [ ] MBC2
+- [ ] MBC3
+- [ ] Debugger
+- [ ] GUI
+
+

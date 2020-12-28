@@ -1,6 +1,6 @@
 CXX = g++
 LDFLAGS = -lglfw -lGL -lGLEW
-INCLUDE = -Isrc -I. -Iimgui
+INCLUDE = -Isrc -I.
 CCFLAGS = -Wno-write-strings -g -O2
 
 SRC = $(shell find ./src -name "*.cpp")
@@ -9,7 +9,7 @@ OBJ = $(patsubst ./src/%.cpp, ./obj/%.o, $(SRC))
 .phony: all
 all: $(OBJ)
 	@echo Linking object files ..
-	@$(CXX) $(OBJ) imgui/imgui.a -o bin/niou $(CCFLAGS) $(INCLUDE) $(LDFLAGS)
+	@$(CXX) $(OBJ) -o bin/cozy-gb $(CCFLAGS) $(INCLUDE) $(LDFLAGS)
 
 
 obj/%.o: src/%.cpp
