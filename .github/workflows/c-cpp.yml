@@ -13,5 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: deps
+      run: sudo apt install libglfw3-dev glew-utils libglew-dev libglm-dev
     - name: make
       run: make
