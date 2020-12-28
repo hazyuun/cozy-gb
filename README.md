@@ -33,7 +33,6 @@ $ ./bin/cozy-gb path/to/the/rom
 ## TODO
 - [ ] APU
 - [ ] Timer
-- [x] MBC1
 - [ ] MBC2
 - [ ] MBC3
 - [ ] Debugger
