@@ -16,11 +16,7 @@ In order to compile, you will need :
 * `glew`
 * `glm`
 ### Compiling
-Make directories :
-```bash
-$ mkdir obj bin
-```
-and run the Makefile using :
+Just run the Makefile using :
 ```bash
 $ make
 ```

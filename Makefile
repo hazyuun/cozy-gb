@@ -7,10 +7,13 @@ SRC = $(shell find ./src -name "*.cpp")
 OBJ = $(patsubst ./src/%.cpp, ./obj/%.o, $(SRC))
 
 .phony: all
-all: $(OBJ)
+all: dirs $(OBJ)
 	@echo Linking object files ..
 	@$(CXX) $(OBJ) -o bin/cozy-gb $(CCFLAGS) $(INCLUDE) $(LDFLAGS)
 
+.phony: dirs
+dirs:
+	@mkdir -p bin obj
 
 obj/%.o: src/%.cpp
 	@echo [CXX] $@
